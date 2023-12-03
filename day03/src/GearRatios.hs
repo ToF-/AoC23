@@ -1,7 +1,9 @@
 module GearRatios
     where
 
-import Data.Char 
+import Data.Char
+import Data.List
+import Data.Ord
 
 type Coord = (Int, Int)
 data EngineSchematic = EngineSchematic { bounds :: Coord,
@@ -12,55 +14,51 @@ engineSchematic ss = EngineSchematic { bounds = (maxRow, maxCol), elements = ss 
         maxRow = length ss
         maxCol = length (head ss)
 
-at :: EngineSchematic -> Coord -> Char
-at sch (row,col) = (elements sch) !! row !! col
-
-withinBounds :: Coord -> EngineSchematic -> Bool
-withinBounds (r,c) sch = r >=0 && r < (fst (bounds sch)) && c >= 0 && c < (snd (bounds sch))
-
-isASymbol :: Char -> Bool
-isASymbol c = c /= '.' && not (isDigit c)
-
-isConnected :: Coord -> EngineSchematic -> Bool
-isConnected (row,col) sch = or $ map hasSymbolAt [(row-1,col+1)
-                                                 ,(row-1,col)
-                                                 ,(row-1,col-1)
-                                                 ,(row,col-1)
-                                                 ,(row+1,col-1)
-                                                 ,(row+1,col)
-                                                 ,(row+1,col+1)
-                                                 ,(row,col+1)]
+surrounding :: Coord -> Coord -> [Coord]
+surrounding (n,m) (i,j) = filter (\(x,y) -> x >= 0 && x < n && y >= 0 && y < m)
+            [(i-1,j-1),(i-1,j),(i-1,j+1),(i,j-1),(i,j+1),(i+1,j-1),(i+1,j),(i+1,j+1)]
+connections :: EngineSchematic -> [Coord]
+connections sch = (nub . sort . concatMap (surrounding (maxrow,maxcol)). filter symbolAt)
+    [(r,c) | r <- [0..maxrow-1], c <- [0..maxcol-1]]
     where
-        hasSymbolAt coord = coord `withinBounds` sch && isASymbol (sch `at` coord)
+        (maxrow,maxcol) = bounds sch
+        symbolAt (i,j) = c /= '.' && not (isDigit c)
+            where c = (elements sch) !! i !! j
+
+numbers :: EngineSchematic -> [(Int,[Coord])]
+numbers sch = concat $ zipWith  indexOnRow  [0..] (map lineNumbers (elements sch))
+
+
+indexOnRow :: Int -> [(Int, [Int])] -> [(Int,[Coord])]
+indexOnRow r = map (\(n,cds) -> (n, map ((,)r) cds))
+
+lineNumbers :: String -> [(Int, [Int])]
+lineNumbers row = 
+    (map (\g -> (read (map snd g), map fst g)) .
+    filter (\g -> (isDigit . snd . head) g) .
+    groupBy (\a b -> (isDigit . snd) a == (isDigit . snd) b) .
+    zip [0..]) row
 
 connectedNumbers :: EngineSchematic -> [Int]
-connectedNumbers sch = cna Nothing False sch coords
+connectedNumbers sch = map fst $ filter isConnected $ numbers sch
     where
-    coords = [(row, col) | row <- [0..(fst (bounds sch))-1], col <- [0..(snd (bounds sch))-1]]
+        isConnected :: (Int,[Coord]) -> Bool
+        isConnected (_,cds) = or (map (`elem` cns) cds)
+        cns = connections sch
 
-    cna :: Maybe Int -> Bool -> EngineSchematic -> [Coord] -> [Int]
-
-    cna Nothing _ _ [] = []
-    cna (Just n) False _ [] = []
-    cna (Just n) True  _ [] = [n]
-
-    cna Nothing _ sch (coord:coords) | isDigit (sch `at` coord) = cna (Just (digitToInt (sch `at` coord))) (isConnected coord sch) sch coords
-
-    cna Nothing _ sch (coord:coords) = cna Nothing False sch coords
-
-    cna (Just acc) conn sch (coord:coords) | isDigit (sch `at` coord) && (snd coord) == ((snd (bounds sch)) - 1) =
-        prefix <> cna Nothing False sch coords
+stars :: EngineSchematic -> [Coord]
+stars sch = filter (\(r,c) -> (elements sch)!!r!!c == '*')
+    [(i,j) | i <- [0..maxrow-1], j <- [0..maxcol-1]]
         where
-        prefix = if connected then [n] else []
-        connected = conn || isConnected coord sch
-        n = acc * 10 + digitToInt (sch `at` coord)
+            (maxrow,maxcol) = bounds sch
 
-    cna (Just acc) conn sch (coord:coords) | isDigit (sch `at` coord) = cna (Just n) connected sch coords
-        where
-            connected = conn || isConnected coord sch
-            n = acc * 10 + digitToInt (sch `at` coord)
 
-    cna (Just acc) conn sch (coord:coords) | not (isDigit (sch `at` coord)) = prefix <> cna Nothing False sch coords
-        where
-            prefix = if connected then [acc] else []
-            connected = conn || isConnected coord sch
+starConnectedNumbers :: EngineSchematic -> Coord -> [Int]
+starConnectedNumbers sch cd = (sort . map fst . nub . sortBy (comparing snd) . filter (hasConnection cd)) (numbers sch)
+    where
+        hasConnection :: Coord -> (Int,[Coord]) -> Bool
+        hasConnection cd (_,cds) = or (map (`elem` starConnections) cds)
+        starConnections = surrounding (bounds sch) cd
+
+allStarConnectedNumbers :: EngineSchematic -> [[Int]]
+allStarConnectedNumbers sch = filter (\g-> (length g == 2)) $ map (starConnectedNumbers sch) (stars sch)
