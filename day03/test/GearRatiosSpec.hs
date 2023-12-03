@@ -37,3 +37,13 @@ spec = do
             isConnected (9,5) sch `shouldBe` True
             isConnected (9,6) sch `shouldBe` True
 
+        it "can be scanned for numbers that are connected" $ do
+            let sch = engineSchematic sample
+            connectedNumbers sch `shouldBe` [467, 35, 633, 617, 592, 755, 664, 598]
+            sum (connectedNumbers sch) `shouldBe` 4361
+
+        it "can solve part 1 of the puzzle" $ do
+            puzzle <- lines <$> readFile "data/puzzle.txt"
+            let sch = engineSchematic puzzle
+            sum (connectedNumbers sch) `shouldBe` 0
+
