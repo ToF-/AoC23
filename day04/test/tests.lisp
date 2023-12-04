@@ -34,5 +34,11 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11")
       (is (eql 13 (all-points (mapcar #'read-card (cl-ppcre:split "\\n" *sample*)))))
       (is (eql 33950 (all-points (read-cards-from-file "data/puzzle.txt")))))
 
+(test copies-calculate-number-of-card-copies-won
+      (is (eql 30 (copies (mapcar #'winnings (mapcar #'read-card (cl-ppcre:split "\\n" *sample*)))))))
+
+(test puzzle-part-two
+      (is (eql 0 (copies (mapcar #'winnings (read-cards-from-file "data/puzzle.txt"))))))
+
 (run!)
 

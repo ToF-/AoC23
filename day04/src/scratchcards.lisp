@@ -22,3 +22,16 @@
 
 (defun read-cards-from-file (filepath)
   (mapcar #'read-card (uiop:read-file-lines filepath)))
+
+(defun copies (scores)
+  (labels ((initial (l)
+                    (loop for i from 1 to (length l)
+                          collect (1- i)))
+           (copies-acc (scores indexes)
+                       (if (null indexes) 
+                         0
+                         (let* ((next-index (car indexes))
+                                (score (nth next-index scores))
+                                (copies (loop for i from 1 to score collect (+ next-index i))))
+                           (1+ (copies-acc scores (append (cdr indexes) copies)))))))
+    (copies-acc scores (initial scores))))
