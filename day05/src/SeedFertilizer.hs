@@ -30,3 +30,13 @@ readAlmanach ss = Almanach { seeds = map read (tail (words (head ss))),
         readAllMaps sfMap (s:ss) = readAllMaps (sfMap <> [Range dst src len]) ss
             where [dst,src,len] = map read (words s)
 
+mapping :: Int -> SfMap -> Int
+mapping n [] = n
+mapping n (Range dst src len:rs) | n >= src && n < src + len = dst + n - src
+mapping n (_:rs) = mapping n rs
+
+allMappings :: Int -> [SfMap] -> Int
+allMappings n sfMaps = foldl (\a i -> mapping a (sfMaps !! i)) n [0..6]
+
+lowestLocation :: Almanach -> Int
+lowestLocation al = minimum (map (\n -> allMappings n (maps al)) (seeds al))
