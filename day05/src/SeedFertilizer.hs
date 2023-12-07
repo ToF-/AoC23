@@ -40,3 +40,23 @@ seedRanges al = seedRanges' (seeds al)
     where
         seedRanges' [] = []
         seedRanges' (s:l:ss) = (s,l) : seedRanges' ss
+
+convert :: Int -> Converter -> Maybe Int
+convert n (Converter dst (start,len)) =
+    let offset = n - start
+        within = offset >= 0 && offset < len
+        result = dst + offset
+    in if within then Just result else Nothing
+
+mapping :: Int -> Map -> Int
+mapping n (Map []) = n
+mapping n (Map (c:cs)) =
+    let result = convert n c
+     in case result of
+          (Just m) -> m
+          Nothing -> mapping n (Map cs)
+
+lowestLocation :: Almanach -> Int
+lowestLocation sf = minimum $ foldl allMappings (seeds sf) [0..6]
+    where
+        allMappings seedList i = map (\seed -> mapping seed ((maps sf)!!i)) seedList
