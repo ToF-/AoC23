@@ -39,5 +39,5 @@ bool read_almanach(struct Almanach *, char *);
 int scan_ints(long *,int, char *);
 int scan_seeds(long *, char *);
 bool scan_converter(struct Converter*, char *);
-int scan_map(struct Map*, char *[], int);
+int scan_map(struct Map*, char **, int);
 void print_almanach(struct Almanach*);

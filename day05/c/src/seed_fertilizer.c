@@ -39,72 +39,81 @@ bool scan_converter(struct Converter* converter, char *srce) {
     return false;
 }
 
-int scan_map(struct Map* map, char *lines[], int line) {
+int scan_map(struct Map* map, char **lines, int remaining) {
     map->maxConverters = 0;
-    if(!strchr(lines[line],':')) {
+    if(!strchr(lines[0],':')) {
         return 0;
     }
-    int n = 1;
-    while(strlen(lines[line+n]) > 0 && scan_converter(&(map->converters[map->maxConverters]), lines[line+n])) {
-        struct Converter c = map->converters[map->maxConverters];
+    for(int i = 1; i < remaining && isdigit(lines[i][0]); i++) {
+        struct Converter *converter = &map->converters[map->maxConverters];
+        scan_converter(converter, lines[i]);
         map->maxConverters++;
-        n++;
     }
     return map->maxConverters;
 }
 
 bool read_almanach(struct Almanach *almanach, char *filename) {
-    char *lines[MAXLINE];
-    int maxLine = 0;
-    FILE *file = fopen(filename, "r");
-    if(!file) {
-        printf("can't open %s\n", filename);
-        return false;
-    }
+    char **lines;
     char line[MAXLINE];
-    while(fgets(line,MAXLINE,file)!= NULL) {
-        if(strlen(line)>2) {
-            line[strcspn(line, "\n")] = '\0';
-            assert(strlen(line) > 0);
-            lines[maxLine] = (char *)malloc(strlen(line));
-            printf("%p\n", lines[maxLine]);
-            strcpy(lines[maxLine], line);
-            maxLine++;
-        }
-    }
-    printf("####\n");
-    fclose(file);
-    lines[maxLine] = (char *)malloc(strlen("     "));
-    strcpy(lines[maxLine], "     ");
-    maxLine++;
-    long seeds[MAXSEEDS];
-    int maxSeeds = scan_seeds(seeds, lines[0]);
-    if (maxSeeds == 0) {
-        printf("ooops\n");
-        for(int i=0;i<maxLine; i++)
-            free(lines[i]);
+    int lineCount = 0;
+    FILE *file;
+    file = fopen(filename, "r");
+    if(!file) {
+        perror("can't open file");
         return false;
     }
-    for(int i=0; i<maxSeeds; i++) {
-        almanach->seeds[i] = seeds[i];
+    while(fgets(line, MAXLINE, file) != NULL) {
+        lineCount++;
     }
-    almanach->maxSeeds = maxSeeds;
-    int l = 1;
+    lines = (char **)malloc(lineCount * sizeof(char *));
+    if(lines == NULL) {
+        perror("memory allocation error");
+        fclose(file);
+        return false;
+    }
+    rewind(file);
+    for(int i=0; i<lineCount; i++) {
+        fgets(line, MAXLINE, file);
+        line[strcspn(line,"\n")] = 0;
+        lines[i] = (char *)malloc(strlen(line)+1);
+        if (lines[i] == NULL) {
+            perror("memory allocation error");
+            for(int j=0; j<i; j++) {
+                free(lines[j]);
+            }
+            free(lines);
+            fclose(file);
+            return false;
+        }
+        strcpy(lines[i], line);
+    }
+    fclose(file);
+    long *seeds = almanach->seeds;
+    almanach->maxSeeds = scan_seeds(seeds, lines[0]);
     almanach->maxMaps = 0;
-    while(l < maxLine ) {
-        int result = scan_map(&almanach->maps[almanach->maxMaps], lines, l);
-        if (result > 0) {
-            l = l + result + 1;
-            almanach->maxMaps++;
-        }
-        else {
-            l = maxLine;
+    struct Map *map;
+    for(int i=1; i<lineCount ;i++) {
+        assert(almanach->maxMaps < 7);
+        if(strlen(lines[i]) == 0) {
+            if(i > 2){
+                almanach->maxMaps++;
+            }
+        } else if(strchr(lines[i], ':')) {
+            struct Map *map = &almanach->maps[almanach->maxMaps];
+            map->maxConverters = 0;
+        } else {
+            struct Map *map = &almanach->maps[almanach->maxMaps];
+            assert(scan_converter(&map->converters[map->maxConverters], lines[i]));
+            map->maxConverters++;
+            assert(almanach->maps[almanach->maxMaps].maxConverters);
         }
     }
-    for(int i=0;i<maxLine; i++) {
-        printf("%p\n", lines[i]);
+    for(int i=0; i<lineCount; i++) {
         free(lines[i]);
     }
+    for(int i=0; i<7; i++)
+        assert(almanach->maps[i].maxConverters);
+    print_almanach(almanach);
     return true;
 }
 
@@ -112,8 +121,10 @@ void print_almanach(struct Almanach *almanach) {
     printf("seeds:");
     for(int i=0; i<almanach->maxSeeds; i++)
         printf(" %ld", almanach->seeds[i]);
+    printf("\n");
     for(int i=0; i<almanach->maxMaps; i++) {
         printf("map#%d\n", i);
+        assert(almanach->maps[i].maxConverters);
         for(int j=0; j<almanach->maps[i].maxConverters; j++) {
             struct Converter c = almanach->maps[i].converters[j];
             printf("%ld %ld %ld\n", c.dest, c.range.start, c.range.len);

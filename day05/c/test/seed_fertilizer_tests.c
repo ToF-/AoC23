@@ -42,12 +42,18 @@ TEST(seed_fertilizer, scan_converter) {
     TEST_ASSERT_FALSE(scan_converter(&converter, ""));
 }
 
-TEST(seed_fertilizer, read_almanach) {
+TEST(seed_fertilizer, read_sample) {
     struct Almanach almanach;
     bool result;
-    result = read_almanach(&almanach, "../data/sample.txt");
     result = read_almanach(&almanach, "../data/sample.txt");
     TEST_ASSERT_TRUE(result);
     TEST_ASSERT_EQUAL(7, almanach.maxMaps);
     TEST_ASSERT_EQUAL(4, almanach.maps[6].converters[1].range.len);
+}
+TEST(seed_fertilizer, read_puzzle) {
+    struct Almanach almanach;
+    bool result;
+    result = read_almanach(&almanach, "../data/puzzle.txt");
+    TEST_ASSERT_TRUE(result);
+    TEST_ASSERT_EQUAL(7, almanach.maxMaps);
 }
