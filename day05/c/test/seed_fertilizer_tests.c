@@ -64,8 +64,7 @@ TEST(seed_fertilizer, read_almanach) {
     TEST_ASSERT_TRUE(result);
     TEST_ASSERT_EQUAL(7, almanach.maxMaps);
     TEST_ASSERT_EQUAL(4, almanach.maps[6].converters[1].range.len);
-
-
+    print_almanach(&almanach);
 
 }
 

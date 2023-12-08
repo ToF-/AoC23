@@ -40,3 +40,4 @@ int scan_ints(int *,int, char *);
 int scan_seeds(int *, char *);
 bool scan_converter(struct Converter*, char *);
 int scan_map(struct Map*, char *[], int);
+void print_almanach(struct Almanach*);
