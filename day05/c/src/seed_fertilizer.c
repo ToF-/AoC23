@@ -2,11 +2,12 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "seed_fertilizer.h"
 
 #define MAXLINE 300
 
-int scan_ints(int *dest, int max_to_scan, char *srce) {
+int scan_ints(long *dest, int max_to_scan, char *srce) {
     int scanned = 0;
     char *p = srce;
     while(scanned < max_to_scan && *p) {
@@ -15,7 +16,7 @@ int scan_ints(int *dest, int max_to_scan, char *srce) {
         if(end == p) {
             return scanned;
         }
-        dest[scanned] = (int)n;
+        dest[scanned] = n;
         scanned++;
         p = end;
         while(*p && !isdigit(*p)) p++;
@@ -23,12 +24,12 @@ int scan_ints(int *dest, int max_to_scan, char *srce) {
     return scanned;
 }
 
-int scan_seeds(int *dest, char *srce) {
+int scan_seeds(long *dest, char *srce) {
     char *p = strchr(srce,' ');
     return scan_ints(dest, MAXSEEDS, p);
 }
 bool scan_converter(struct Converter* converter, char *srce) {
-    int values[3];
+    long values[3];
     if(scan_ints(values, 3, srce)) {
         converter->dest = values[0];
         converter->range.start = values[1];
@@ -64,20 +65,26 @@ bool read_almanach(struct Almanach *almanach, char *filename) {
     while(fgets(line,MAXLINE,file)!= NULL) {
         if(strlen(line)>2) {
             line[strcspn(line, "\n")] = '\0';
+            assert(strlen(line) > 0);
             lines[maxLine] = (char *)malloc(strlen(line));
+            printf("%p\n", lines[maxLine]);
             strcpy(lines[maxLine], line);
             maxLine++;
         }
     }
+    printf("####\n");
     fclose(file);
-    lines[maxLine] = (char *)malloc(strlen(" "));
-    strcpy(lines[maxLine], " ");
+    lines[maxLine] = (char *)malloc(strlen("     "));
+    strcpy(lines[maxLine], "     ");
     maxLine++;
-    int seeds[MAXSEEDS];
+    long seeds[MAXSEEDS];
     int maxSeeds = scan_seeds(seeds, lines[0]);
-    if (maxSeeds == 0)
+    if (maxSeeds == 0) {
+        printf("ooops\n");
+        for(int i=0;i<maxLine; i++)
+            free(lines[i]);
         return false;
-
+    }
     for(int i=0; i<maxSeeds; i++) {
         almanach->seeds[i] = seeds[i];
     }
@@ -94,18 +101,22 @@ bool read_almanach(struct Almanach *almanach, char *filename) {
             l = maxLine;
         }
     }
+    for(int i=0;i<maxLine; i++) {
+        printf("%p\n", lines[i]);
+        free(lines[i]);
+    }
     return true;
 }
 
 void print_almanach(struct Almanach *almanach) {
     printf("seeds:");
     for(int i=0; i<almanach->maxSeeds; i++)
-        printf(" %d", almanach->seeds[i]);
+        printf(" %ld", almanach->seeds[i]);
     for(int i=0; i<almanach->maxMaps; i++) {
         printf("map#%d\n", i);
         for(int j=0; j<almanach->maps[i].maxConverters; j++) {
             struct Converter c = almanach->maps[i].converters[j];
-            printf("%d %d %d\n", c.dest, c.range.start, c.range.len);
+            printf("%ld %ld %ld\n", c.dest, c.range.start, c.range.len);
         }
     }
     printf("\n");

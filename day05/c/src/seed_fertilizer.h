@@ -7,17 +7,17 @@
 
 
 struct Interval {
-    int start;
-    int len;
+    long start;
+    long len;
 };
 
 struct Range {
-    int start;
-    int len;
+    long start;
+    long len;
 };
 
 struct Converter {
-    int dest;
+    long dest;
     struct Range range;
 };
 
@@ -30,14 +30,14 @@ struct Almanach {
     int maxSeeds;
     int maxSeedRanges;
     int maxMaps;
-    int seeds[MAXSEEDS];
+    long seeds[MAXSEEDS];
     struct Range seedRanges[MAXSEEDRANGES];
     struct Map maps[MAXMAPS];
 };
 
 bool read_almanach(struct Almanach *, char *);
-int scan_ints(int *,int, char *);
-int scan_seeds(int *, char *);
+int scan_ints(long *,int, char *);
+int scan_seeds(long *, char *);
 bool scan_converter(struct Converter*, char *);
 int scan_map(struct Map*, char *[], int);
 void print_almanach(struct Almanach*);
