@@ -7,7 +7,7 @@ import Data.List
 type Length = Int
 type Interval = (Int, Int)
 
-data Range = R { start :: Int, length :: Length }
+data Range = R { start :: Int, len :: Length }
     deriving (Eq, Show)
 
 data Almanach = Almanach { seeds      :: [Int],
@@ -102,7 +102,7 @@ mappingR rs (M (c:cs)) = foldr convertAllRanges rs (c:cs)
 
 allMappingsR :: [Range] -> [Map] -> [[Range]]
 allMappingsR [] _ = []
-allMappingsR rs [] = [rs]
+allMappingsR rs [] = []
 allMappingsR rs (m:ms) = result : allMappingsR result ms
     where
         result = mappingR rs m

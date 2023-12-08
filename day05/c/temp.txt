@@ -1,0 +1,5 @@
+mkdir -p test/runner
+./gen_test_runner.awk test/seed_fertilizer_tests.c >test/runner/test_runner.c
+./gen_all_tests.awk test/seed_fertilizer_tests.c >test/runner/all_tests.c
+clang  -Isrc -Iunity/src -Iunity/extras/fixture/src -Iunity/extras/memory/src  src/seed_fertilizer.c unity/src/unity.c unity/extras/memory/src/unity_memory.c unity/extras/fixture/src/unity_fixture.c  test/*.c test/runner/*.c -o bin/run_test
+./bin/run_test
