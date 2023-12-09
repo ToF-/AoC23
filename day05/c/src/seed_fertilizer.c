@@ -7,6 +7,9 @@
 
 #define MAXLINE 300
 
+unsigned long min(unsigned long, unsigned long);
+unsigned long max(unsigned long, unsigned long);
+
 void make_seed_ranges(struct Almanach *);
 
 int scan_ints(unsigned long *dest, int max_to_scan, char *srce) {
@@ -201,4 +204,70 @@ unsigned long minimum_location_map_all_seed_ranges(struct Almanach *almanach) {
         }
     }
     return min;
+}
+
+struct Converter id_converter(struct Range range) {
+    struct Converter result = { range.start, range };
+    return result;
+}
+
+unsigned long min(unsigned long a, unsigned long b) {
+    if (a < b)
+        return a;
+    return b;
+}
+
+unsigned long max(unsigned long a, unsigned long b) {
+    if (a > b)
+        return a;
+    return b;
+}
+
+struct Split split_converter(struct Converter original, struct Converter splitter) {
+   struct Converter empty = { 0, { 0, 0}};
+   struct Split result = { empty, empty, empty, empty };
+   struct Range intersect_range;
+   intersect_range.start = max(original.range.start, splitter.range.start);
+   unsigned long intersect_end = min(original.range.start + original.range.len - 1, splitter.range.start + splitter.range.len - 1);
+
+   intersect_range.len = intersect_end > intersect_range.start ? intersect_end - intersect_range.start + 1 : 0 ;
+   result.intersect.range = intersect_range;
+   if (!valid_converter(result.intersect)) {
+       result.original = original;
+       result.intersect = empty;
+       return result;
+   }
+   result.original = empty;
+   result.intersect.range.start = intersect_range.start;
+   result.intersect.dest = splitter.dest;
+
+   if(original.range.start < result.intersect.range.start) {
+       result.before.dest = original.dest;
+       result.before.range.start = original.range.start;
+       result.before.range.len = result.intersect.range.start - result.before.range.start;
+   }
+   if((original.range.start + original.range.len - 1) > (result.intersect.range.start + result.intersect.range.len - 1)) {
+       result.beyond.dest = result.intersect.range.start + result.intersect.range.len;
+       result.beyond.range.start = result.beyond.dest;
+       result.beyond.range.len = original.range.start + original.range.len - result.beyond.range.start;
+   }
+   assert(result.before.range.len + result.intersect.range.len + result.beyond.range.len == original.range.len);
+   return result;
+}
+
+bool valid_converter(struct Converter converter) {
+    return converter.range.len > 0;
+}
+
+void print_split(struct Split split) {
+    printf("\noriginal: %lu %lu %lu [%lu..%lu]\t before: %lu %lu %lu [%lu..%lu]\t intersect: %lu %lu %lu [%lu %lu]\t beyond: %lu %lu %lu [%lu %lu]\n",
+            split.original.dest, split.original.range.start, split.original.range.len, split.original.range.start, split.original.range.start + split.original.range.len - 1,
+            split.before.dest, split.before.range.start, split.before.range.len, split.before.range.start, split.before.range.start + split.before.range.len - 1,
+            split.intersect.dest, split.intersect.range.start, split.intersect.range.len, split.intersect.range.start, split.intersect.range.start + split.intersect.range.len - 1,
+            split.beyond.dest, split.beyond.range.start, split.beyond.range.len, split.beyond.range.start, split.beyond.range.start + split.beyond.range.len - 1);
+
+}
+void print_converter(struct Converter converter) {
+    printf("%lu %lu %lu [%lu..%lu]\n", converter.dest, converter.range.start, converter.range.len,
+            converter.range.start, converter.range.start + converter.range.len - 1);
 }

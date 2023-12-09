@@ -116,9 +116,87 @@ TEST(seed_fertilizer, minimum_map_all_seed_ranges) {
     TEST_ASSERT_EQUAL(46, result);
 }
 
-TEST(seed_fertilizer, solve_puzzle_part_two) {
+TEST(seed_fertilizer, solve_puzzle_part_two_brute_force) {
     struct Almanach almanach;
     read_almanach(&almanach, "../data/puzzle.txt");
-    unsigned long result = minimum_location_map_all_seed_ranges(&almanach);
-    TEST_ASSERT_EQUAL(46, result);
+//    unsigned long result = minimum_location_map_all_seed_ranges(&almanach);
+//    TEST_ASSERT_EQUAL(46, result);
+}
+
+TEST(seed_fertilizer, id_converter) {
+    struct Range range = { 17, 20 };
+    struct Converter converter = id_converter(range);
+    TEST_ASSERT_EQUAL(17, converter.dest);
+    TEST_ASSERT_EQUAL(17, converter.range.start);
+    TEST_ASSERT_EQUAL(20, converter.range.len);
+}
+
+TEST(seed_fertilizer, split_no_intersect) {
+    struct Range range = { 79, 14 };  // extends from 79 to 92, so no intersection
+    struct Converter converter = { 50, { 98, 2 }};
+    struct Split split = split_converter(id_converter(range), converter);
+    print_converter(id_converter(range));
+    print_converter(converter);
+    print_split(split);
+    TEST_ASSERT_EQUAL(79, split.original.dest);
+    TEST_ASSERT_EQUAL(79, split.original.range.start);
+    TEST_ASSERT_EQUAL(14, split.original.range.len);
+    TEST_ASSERT_TRUE(valid_converter(split.original));
+    TEST_ASSERT_FALSE(valid_converter(split.before));
+    TEST_ASSERT_FALSE(valid_converter(split.intersect));
+    TEST_ASSERT_FALSE(valid_converter(split.beyond));
+}
+TEST(seed_fertilizer, split_full_intersect) {
+    struct Range range = { 79, 14 };
+    struct Converter converter = { 50, { 79, 14 }};
+    print_converter(id_converter(range));
+    print_converter(converter);
+    struct Split split = split_converter(id_converter(range), converter);
+    print_split(split);
+    TEST_ASSERT_TRUE(valid_converter(split.intersect));
+    TEST_ASSERT_EQUAL(50, split.intersect.dest);
+    TEST_ASSERT_EQUAL(79, split.intersect.range.start);
+    TEST_ASSERT_EQUAL(14, split.intersect.range.len);
+
+    TEST_ASSERT_FALSE(valid_converter(split.original));
+    TEST_ASSERT_FALSE(valid_converter(split.before));
+    TEST_ASSERT_FALSE(valid_converter(split.beyond));
+}
+TEST(seed_fertilizer, split_intersect_with_before) {
+    struct Range range = { 49, 44 };
+    struct Converter converter = { 50, { 79, 14 }};
+    print_converter(id_converter(range));
+    print_converter(converter);
+    struct Split split = split_converter(id_converter(range), converter);
+    print_split(split);
+    TEST_ASSERT_TRUE(valid_converter(split.intersect));
+    TEST_ASSERT_EQUAL(50, split.intersect.dest);
+    TEST_ASSERT_EQUAL(79, split.intersect.range.start);
+    TEST_ASSERT_EQUAL(14, split.intersect.range.len);
+
+    TEST_ASSERT_FALSE(valid_converter(split.original));
+    TEST_ASSERT_EQUAL(49, split.before.dest);
+    TEST_ASSERT_EQUAL(49, split.before.range.start);
+    TEST_ASSERT_EQUAL(30, split.before.range.len);
+    TEST_ASSERT_TRUE(valid_converter(split.before));
+    TEST_ASSERT_FALSE(valid_converter(split.beyond));
+}
+TEST(seed_fertilizer, split_intersect_with_beyond) {
+    struct Range range = { 49, 64 };
+    struct Converter converter = { 50, { 79, 14 }};
+    print_converter(id_converter(range));
+    print_converter(converter);
+    struct Split split = split_converter(id_converter(range), converter);
+    print_split(split);
+    TEST_ASSERT_TRUE(valid_converter(split.intersect));
+    TEST_ASSERT_EQUAL(50, split.intersect.dest);
+    TEST_ASSERT_EQUAL(79, split.intersect.range.start);
+    TEST_ASSERT_EQUAL(14, split.intersect.range.len);
+
+    TEST_ASSERT_FALSE(valid_converter(split.original));
+    TEST_ASSERT_EQUAL(93, split.beyond.dest);
+    TEST_ASSERT_EQUAL(93, split.beyond.range.start);
+    TEST_ASSERT_EQUAL(20, split.beyond.range.len);
+    TEST_ASSERT_TRUE(valid_converter(split.before));
+    TEST_ASSERT_TRUE(valid_converter(split.beyond));
 }

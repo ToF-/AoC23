@@ -1,0 +1,6 @@
+
+A a  B b                original   before  intersect  beyond
+|||  ---                Aa         ∅       ∅          ∅
+
+A  Ba  b
+|||++---                ∅          A(B-A)  

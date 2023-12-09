@@ -37,6 +37,13 @@ struct Almanach {
     struct Map maps[MAXMAPS];
 };
 
+struct Split {
+    struct Converter original;
+    struct Converter intersect;
+    struct Converter before;
+    struct Converter beyond;
+};
+
 bool read_almanach(struct Almanach *, char *);
 int scan_ints(unsigned long *,int, char *);
 int scan_seeds(unsigned long *, char *);
@@ -47,3 +54,8 @@ unsigned long convert(unsigned long, struct Converter);
 unsigned long map_convert(unsigned long, struct Map);
 unsigned long minimum_location_map_all_seeds(struct Almanach *);
 unsigned long minimum_location_map_all_seed_ranges(struct Almanach *);
+struct Converter id_converter(struct Range);
+struct Split split_converter(struct Converter, struct Converter);
+bool valid_converter(struct Converter);
+void print_split(struct Split);
+void print_converter(struct Converter);
