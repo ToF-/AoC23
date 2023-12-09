@@ -326,3 +326,29 @@ void map_map(struct Map *dest, struct Map *srce, struct Map *map) {
     assert(dest->maxConverters > 0);
     printf("result:\n"); print_map(dest);
 }
+
+void map_all_maps(struct Map *dest, struct Map*srce, struct Almanach *almanach) {
+    struct Map source;
+    for(int i=0; i < srce->maxConverters; i++) {
+        source.converters[i] = srce->converters[i];
+    }
+    source.maxConverters = srce->maxConverters;
+    for(int i=0; i < almanach->maxMaps; i++) {
+        struct Map inter;
+        inter.maxConverters = 0;
+        map_map(&inter, &source, &almanach->maps[i]);
+        for(int j=0; j<-inter.maxConverters; j++) {
+            dest->converters[dest->maxConverters] = inter.converters[j];
+            dest->maxConverters++;
+        }
+        for(int j=0; i<inter.maxConverters; i++) {
+            source.converters[i] = inter.converters[i];
+        }
+        source.maxConverters = inter.maxConverters;
+    }
+    dest->maxConverters = 0;
+    for(int j=0; j<source.maxConverters; j++) {
+        dest->converters[j] = source.converters[j];
+    }
+    dest->maxConverters = source.maxConverters;
+}

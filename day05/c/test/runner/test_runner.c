@@ -20,4 +20,5 @@ TEST_GROUP_RUNNER(seed_fertilizer) {
     RUN_TEST_CASE(seed_fertilizer, split_intersect_with_beyond);
     RUN_TEST_CASE(seed_fertilizer, split_map);
     RUN_TEST_CASE(seed_fertilizer, map_map);
+    RUN_TEST_CASE(seed_fertilizer, map_all_maps);
 }

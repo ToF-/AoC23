@@ -12,6 +12,7 @@ TEST_SETUP(seed_fertilizer) { }
 TEST_TEAR_DOWN(seed_fertilizer) { }
 
 TEST(seed_fertilizer, scan_ints) {
+    printf("scan_ints\n");
     unsigned long my_ints[100];
     int int_max = scan_ints(my_ints, 100, "  42 17 23 4807 ");
     TEST_ASSERT_EQUAL(4, int_max);
@@ -22,6 +23,7 @@ TEST(seed_fertilizer, scan_ints) {
 }
 
 TEST(seed_fertilizer, scan_seeds) {
+    printf("scan_seeds\n");
     unsigned long seeds[100];
     int result = scan_seeds(seeds, "seeds: 79 14 55 13");
     TEST_ASSERT_EQUAL(4, result);
@@ -33,6 +35,7 @@ TEST(seed_fertilizer, scan_seeds) {
 }
 
 TEST(seed_fertilizer, scan_converter) {
+    printf("scan_converter\n");
     struct Converter converter;
     bool result = scan_converter(&converter, "49 53 8");
     TEST_ASSERT_TRUE(result);
@@ -43,6 +46,7 @@ TEST(seed_fertilizer, scan_converter) {
 }
 
 TEST(seed_fertilizer, read_sample) {
+    printf("read_sample\n");
     struct Almanach almanach;
     bool result;
     result = read_almanach(&almanach, "../data/sample.txt");
@@ -51,6 +55,7 @@ TEST(seed_fertilizer, read_sample) {
     TEST_ASSERT_EQUAL(4, almanach.maps[6].converters[1].range.len);
 }
 TEST(seed_fertilizer, read_puzzle) {
+    printf("read_puzzle\n");
     struct Almanach almanach;
     bool result;
     result = read_almanach(&almanach, "../data/puzzle.txt");
@@ -59,6 +64,7 @@ TEST(seed_fertilizer, read_puzzle) {
 }
 
 TEST(seed_fertilizer, convert) {
+    printf("convert\n");
     struct Converter converter = { 50, { 98, 2 }};
     TEST_ASSERT_EQUAL(50, convert(98, converter));
     TEST_ASSERT_EQUAL(51, convert(99, converter));
@@ -76,6 +82,7 @@ TEST(seed_fertilizer, convert) {
          //    mapping 100 m `shouldBe` 100
 
 TEST(seed_fertilizer, map) {
+    printf("map\n");
     struct Map map = { 2, .converters = {{ 50, { 98, 2 }}, { 52, { 50, 48 }}}};
     TEST_ASSERT_EQUAL(49, map_convert(49, map));
     TEST_ASSERT_EQUAL(50, map_convert(98, map));
@@ -85,6 +92,7 @@ TEST(seed_fertilizer, map) {
 }
 
 TEST(seed_fertilizer, minimum_map_all_seeds) {
+    printf("minimum_map_all_seeds\n");
     struct Almanach almanach;
     read_almanach(&almanach, "../data/sample.txt");
     TEST_ASSERT_EQUAL(4, almanach.maxSeeds);
@@ -92,6 +100,7 @@ TEST(seed_fertilizer, minimum_map_all_seeds) {
     TEST_ASSERT_EQUAL(35, result);
 }
 TEST(seed_fertilizer, solve_puzzle_part_one) {
+    printf("solve_puzzle_part_one\n");
     struct Almanach almanach;
     read_almanach(&almanach, "../data/puzzle.txt");
     TEST_ASSERT_EQUAL(20, almanach.maxSeeds);
@@ -99,6 +108,7 @@ TEST(seed_fertilizer, solve_puzzle_part_one) {
     TEST_ASSERT_EQUAL(178159714, result);
 }
 TEST(seed_fertilizer, seed_ranges) {
+    printf("seed_ranges\n");
     struct Almanach almanach;
     read_almanach(&almanach, "../data/sample.txt");
     TEST_ASSERT_EQUAL(2, almanach.maxSeedRanges);
@@ -110,6 +120,7 @@ TEST(seed_fertilizer, seed_ranges) {
 }
 
 TEST(seed_fertilizer, minimum_map_all_seed_ranges) {
+    printf("minimum_map_all_seed_ranges\n");
     struct Almanach almanach;
     read_almanach(&almanach, "../data/sample.txt");
     unsigned long result = minimum_location_map_all_seed_ranges(&almanach);
@@ -117,6 +128,7 @@ TEST(seed_fertilizer, minimum_map_all_seed_ranges) {
 }
 
 TEST(seed_fertilizer, solve_puzzle_part_two_brute_force) {
+    printf("solve_puzzle_part_two_brute_force\n");
     struct Almanach almanach;
     read_almanach(&almanach, "../data/puzzle.txt");
 //    unsigned long result = minimum_location_map_all_seed_ranges(&almanach);
@@ -124,6 +136,7 @@ TEST(seed_fertilizer, solve_puzzle_part_two_brute_force) {
 }
 
 TEST(seed_fertilizer, id_converter) {
+    printf("id_converter\n");
     struct Range range = { 17, 20 };
     struct Converter converter = id_converter(range);
     TEST_ASSERT_EQUAL(17, converter.dest);
@@ -132,11 +145,12 @@ TEST(seed_fertilizer, id_converter) {
 }
 
 TEST(seed_fertilizer, split_no_intersect) {
+    printf("split_no_intersect\n");
     struct Range range = { 79, 14 };  // extends from 79 to 92, so no intersection
     struct Converter converter = { 50, { 98, 2 }};
     struct Split split = split_converter(id_converter(range), converter);
-    print_converter(id_converter(range));
-    print_converter(converter);
+    printf("initial:");print_converter(id_converter(range));
+    printf("converter:");print_converter(converter);
     print_split(split);
     TEST_ASSERT_EQUAL(79, split.original.dest);
     TEST_ASSERT_EQUAL(79, split.original.range.start);
@@ -147,10 +161,11 @@ TEST(seed_fertilizer, split_no_intersect) {
     TEST_ASSERT_FALSE(valid_converter(split.beyond));
 }
 TEST(seed_fertilizer, split_full_intersect) {
+    printf("split_full_intersect\n");
     struct Range range = { 79, 14 };
     struct Converter converter = { 50, { 79, 14 }};
-    print_converter(id_converter(range));
-    print_converter(converter);
+    printf("initial:");print_converter(id_converter(range));
+    printf("converter:");print_converter(converter);
     struct Split split = split_converter(id_converter(range), converter);
     print_split(split);
     TEST_ASSERT_TRUE(valid_converter(split.intersect));
@@ -163,6 +178,7 @@ TEST(seed_fertilizer, split_full_intersect) {
     TEST_ASSERT_FALSE(valid_converter(split.beyond));
 }
 TEST(seed_fertilizer, split_intersect_with_before) {
+    printf("split_intersect_with_before\n");
     struct Range range = { 49, 44 };
     struct Converter converter = { 50, { 79, 14 }};
     print_converter(id_converter(range));
@@ -182,6 +198,7 @@ TEST(seed_fertilizer, split_intersect_with_before) {
     TEST_ASSERT_FALSE(valid_converter(split.beyond));
 }
 TEST(seed_fertilizer, split_intersect_with_beyond) {
+    printf("split_intersect_with_beyond\n");
     struct Range range = { 49, 64 };
     struct Converter converter = { 50, { 79, 14 }};
     print_converter(id_converter(range));
@@ -202,6 +219,7 @@ TEST(seed_fertilizer, split_intersect_with_beyond) {
 }
 
 TEST(seed_fertilizer, split_map) {
+    printf("split_map\n");
     struct Range range = { 49, 64 };
     struct Converter converter = { 50, { 79, 14 }};
     struct Split split = split_converter(id_converter(range), converter);
@@ -212,16 +230,20 @@ TEST(seed_fertilizer, split_map) {
     TEST_ASSERT_EQUAL(49, result.converters[0].dest);
     TEST_ASSERT_EQUAL(49, result.converters[0].range.start);
     TEST_ASSERT_EQUAL(30, result.converters[0].range.len);
+
     TEST_ASSERT_EQUAL(50, result.converters[1].dest);
     TEST_ASSERT_EQUAL(50, result.converters[1].range.start);
     TEST_ASSERT_EQUAL(14, result.converters[1].range.len);
+
     TEST_ASSERT_EQUAL(93, result.converters[2].dest);
     TEST_ASSERT_EQUAL(93, result.converters[2].range.start);
     TEST_ASSERT_EQUAL(20, result.converters[2].range.len);
     print_map(&result);
+    getchar();
 }
 
 TEST(seed_fertilizer, map_map) {
+    printf("map_map\n");
     struct Almanach almanach;
     struct Range range = { 79, 14 };
     read_almanach(&almanach, "../data/sample.txt");
@@ -230,6 +252,24 @@ TEST(seed_fertilizer, map_map) {
     source.maxConverters = 1;
     struct Map result;
     struct Map first = almanach.maps[0];
+    struct Map second = almanach.maps[1];
     map_map(&result, &source, &first);
+    for(int i=0; i<result.maxConverters; i++)
+        source.converters[i] = result.converters[i];
+    source.maxConverters = result.maxConverters;
+    result.maxConverters = 0;
+    map_map(&result, &source, &second);
 }
+TEST(seed_fertilizer, map_all_maps) {
+    printf("map_all_maps\n");
+    struct Almanach almanach;
+    struct Range range = { 79, 14 };
+    read_almanach(&almanach, "../data/sample.txt");
+    struct Map result;
+    struct Map source;
+    source.converters[0] = id_converter(range);
+    source.maxConverters = 1;
+    map_all_maps(&result, &source, &almanach);
+}
+
 
