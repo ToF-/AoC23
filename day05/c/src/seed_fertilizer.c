@@ -111,7 +111,11 @@ bool read_almanach(struct Almanach *almanach, char *filename) {
             struct Map *map = &almanach->maps[almanach->maxMaps];
             assert(scan_converter(&map->converters[map->maxConverters], lines[i]));
             map->maxConverters++;
-            assert(almanach->maps[almanach->maxMaps].maxConverters);
+            struct Converter last = map->converters[map->maxConverters-1];
+            for(int k=0; k<map->maxConverters-1; k++) {
+                struct Split split = split_converter(map->converters[k], last);
+                assert(!valid_converter(split.intersect));
+            }
         }
     }
     for(int i=0; i<lineCount; i++) {
@@ -270,4 +274,55 @@ void print_split(struct Split split) {
 void print_converter(struct Converter converter) {
     printf("%lu %lu %lu [%lu..%lu]\n", converter.dest, converter.range.start, converter.range.len,
             converter.range.start, converter.range.start + converter.range.len - 1);
+}
+
+void split_map(struct Map *dest, struct Split split) {
+    dest->maxConverters = 0;
+    if (!valid_converter(split.intersect)) {
+        dest->converters[dest->maxConverters] = split.original;
+        dest->maxConverters++;
+        return;
+    }
+    if (valid_converter(split.before)) {
+        dest->converters[dest->maxConverters] = split.before;
+        dest->maxConverters++;
+    }
+    if (valid_converter(split.intersect)) {
+        dest->converters[dest->maxConverters] = split.intersect;
+        dest->converters[dest->maxConverters].range.start = dest->converters[dest->maxConverters].dest;
+        dest->maxConverters++;
+    }
+    if (valid_converter(split.beyond)) {
+        dest->converters[dest->maxConverters] = split.beyond;
+        dest->maxConverters++;
+    }
+}
+
+void print_map(struct Map *map) {
+    for(int i = 0; i < map->maxConverters; i++) {
+        print_converter(map->converters[i]);
+    }
+}
+
+void map_map(struct Map *dest, struct Map *srce, struct Map *map) {
+    printf("initial:\n"); print_map(dest);
+    printf("source:\n"); print_map(srce);
+    printf("map:\n"); print_map(map);
+    dest->maxConverters = 0;
+    for(int i=0; i < srce->maxConverters; i++) {
+        struct Converter source = srce->converters[i];
+        for(int j=0; j < map->maxConverters; j++) {
+            struct Converter converter = map->converters[j];
+            struct Split split = split_converter(source, converter);
+            struct Map inter;
+            split_map(&inter, split);
+            assert(inter.maxConverters > 0);
+            for(int k=0; k<inter.maxConverters; k++) {
+                dest->converters[dest->maxConverters] = inter.converters[k];
+                dest->maxConverters++;
+            }
+        }
+    }
+    assert(dest->maxConverters > 0);
+    printf("result:\n"); print_map(dest);
 }

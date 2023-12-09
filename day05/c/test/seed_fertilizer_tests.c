@@ -200,3 +200,36 @@ TEST(seed_fertilizer, split_intersect_with_beyond) {
     TEST_ASSERT_TRUE(valid_converter(split.before));
     TEST_ASSERT_TRUE(valid_converter(split.beyond));
 }
+
+TEST(seed_fertilizer, split_map) {
+    struct Range range = { 49, 64 };
+    struct Converter converter = { 50, { 79, 14 }};
+    struct Split split = split_converter(id_converter(range), converter);
+    print_split(split);
+    struct Map result;
+    split_map(&result, split);
+    TEST_ASSERT_EQUAL(3, result.maxConverters);
+    TEST_ASSERT_EQUAL(49, result.converters[0].dest);
+    TEST_ASSERT_EQUAL(49, result.converters[0].range.start);
+    TEST_ASSERT_EQUAL(30, result.converters[0].range.len);
+    TEST_ASSERT_EQUAL(50, result.converters[1].dest);
+    TEST_ASSERT_EQUAL(50, result.converters[1].range.start);
+    TEST_ASSERT_EQUAL(14, result.converters[1].range.len);
+    TEST_ASSERT_EQUAL(93, result.converters[2].dest);
+    TEST_ASSERT_EQUAL(93, result.converters[2].range.start);
+    TEST_ASSERT_EQUAL(20, result.converters[2].range.len);
+    print_map(&result);
+}
+
+TEST(seed_fertilizer, map_map) {
+    struct Almanach almanach;
+    struct Range range = { 79, 14 };
+    read_almanach(&almanach, "../data/sample.txt");
+    struct Map source;
+    source.converters[0] = id_converter(range);
+    source.maxConverters = 1;
+    struct Map result;
+    struct Map first = almanach.maps[0];
+    map_map(&result, &source, &first);
+}
+

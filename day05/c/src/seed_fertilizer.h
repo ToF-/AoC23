@@ -59,3 +59,6 @@ struct Split split_converter(struct Converter, struct Converter);
 bool valid_converter(struct Converter);
 void print_split(struct Split);
 void print_converter(struct Converter);
+void split_map(struct Map*, struct Split);
+void print_map(struct Map*);
+void map_map(struct Map*, struct Map *, struct Map*);
