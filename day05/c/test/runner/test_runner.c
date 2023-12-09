@@ -12,4 +12,5 @@ TEST_GROUP_RUNNER(seed_fertilizer) {
     RUN_TEST_CASE(seed_fertilizer, solve_puzzle_part_one);
     RUN_TEST_CASE(seed_fertilizer, seed_ranges);
     RUN_TEST_CASE(seed_fertilizer, minimum_map_all_seed_ranges);
+    RUN_TEST_CASE(seed_fertilizer, solve_puzzle_part_two);
 }

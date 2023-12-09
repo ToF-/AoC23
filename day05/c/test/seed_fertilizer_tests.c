@@ -113,5 +113,12 @@ TEST(seed_fertilizer, minimum_map_all_seed_ranges) {
     struct Almanach almanach;
     read_almanach(&almanach, "../data/sample.txt");
     unsigned long result = minimum_location_map_all_seed_ranges(&almanach);
+    TEST_ASSERT_EQUAL(46, result);
 }
 
+TEST(seed_fertilizer, solve_puzzle_part_two) {
+    struct Almanach almanach;
+    read_almanach(&almanach, "../data/puzzle.txt");
+    unsigned long result = minimum_location_map_all_seed_ranges(&almanach);
+    TEST_ASSERT_EQUAL(46, result);
+}

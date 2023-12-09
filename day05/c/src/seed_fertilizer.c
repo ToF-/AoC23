@@ -181,6 +181,7 @@ unsigned long minimum_location_map_all_seed_ranges(struct Almanach *almanach) {
         unsigned long min_value = INVALID;
         struct Range seedRange = almanach->seedRanges[seed_range_no];
         for(unsigned long l = 0; l < seedRange.len; l++) {
+            if(!(l%1000000)) printf("%2d %12lu/%12lu (%2.2f%)\n", seed_range_no,l, seedRange.len, 100.0*((double)l / (double)seedRange.len));
             unsigned long value = seedRange.start + l;
             for(int map_no = 0; map_no < almanach->maxMaps; map_no++) {
                 struct Map map = almanach->maps[map_no];
@@ -191,6 +192,7 @@ unsigned long minimum_location_map_all_seed_ranges(struct Almanach *almanach) {
             }
         }
         almanach->minLocations[seed_range_no] = min_value;
+            printf("min value: %lu\n", min_value);
     }
     unsigned long min = INVALID;
     for(int i=0; i < almanach->maxSeedRanges; i++) {
