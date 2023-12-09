@@ -7,12 +7,14 @@
 
 #define MAXLINE 300
 
-int scan_ints(long *dest, int max_to_scan, char *srce) {
+void make_seed_ranges(struct Almanach *);
+
+int scan_ints(unsigned long *dest, int max_to_scan, char *srce) {
     int scanned = 0;
     char *p = srce;
     while(scanned < max_to_scan && *p) {
         char *end;
-        long n = strtol(p, &end, 10);
+        unsigned long n = strtol(p, &end, 10);
         if(end == p) {
             return scanned;
         }
@@ -24,12 +26,12 @@ int scan_ints(long *dest, int max_to_scan, char *srce) {
     return scanned;
 }
 
-int scan_seeds(long *dest, char *srce) {
+int scan_seeds(unsigned long *dest, char *srce) {
     char *p = strchr(srce,' ');
     return scan_ints(dest, MAXSEEDS, p);
 }
 bool scan_converter(struct Converter* converter, char *srce) {
-    long values[3];
+    unsigned long values[3];
     if(scan_ints(values, 3, srce)) {
         converter->dest = values[0];
         converter->range.start = values[1];
@@ -88,8 +90,9 @@ bool read_almanach(struct Almanach *almanach, char *filename) {
         strcpy(lines[i], line);
     }
     fclose(file);
-    long *seeds = almanach->seeds;
+    unsigned long *seeds = almanach->seeds;
     almanach->maxSeeds = scan_seeds(seeds, lines[0]);
+    make_seed_ranges(almanach);
     almanach->maxMaps = 0;
     struct Map *map;
     for(int i=1; i<lineCount ;i++) {
@@ -113,7 +116,6 @@ bool read_almanach(struct Almanach *almanach, char *filename) {
     }
     for(int i=0; i<7; i++)
         assert(almanach->maps[i].maxConverters);
-    print_almanach(almanach);
     return true;
 }
 
@@ -131,4 +133,70 @@ void print_almanach(struct Almanach *almanach) {
         }
     }
     printf("\n");
+}
+
+unsigned long convert(unsigned long n, struct Converter converter) {
+    unsigned long result = n >= converter.range.start && n < converter.range.start + converter.range.len ? 
+        converter.dest + n - converter.range.start : INVALID;
+    return result;
+}
+
+unsigned long map_convert(unsigned long n, struct Map map) {
+    for(int i=0; i<map.maxConverters; i++) {
+        unsigned long v = convert(n, map.converters[i]);
+        if(v != INVALID)
+            return v;
+    }
+    return n;
+}
+
+unsigned long minimum_location_map_all_seeds(struct Almanach *almanach) {
+    for(int seed_no = 0; seed_no < almanach->maxSeeds; seed_no++) {
+        unsigned long value = almanach->seeds[seed_no];
+        for(int map_no = 0; map_no < almanach->maxMaps; map_no++) {
+            struct Map map = almanach->maps[map_no];
+            value = map_convert(value, map);
+        }
+        almanach->seeds[seed_no] = value;
+    }
+    unsigned long min = INVALID;
+    for(int i=0; i < almanach->maxSeeds; i++) {
+        if( almanach->seeds[i] < min) {
+            min = almanach->seeds[i];
+        }
+    }
+    return min;
+}
+
+void make_seed_ranges(struct Almanach *almanach) {
+    almanach->maxSeedRanges = almanach->maxSeeds / 2;
+    for(int i = 0; i < almanach->maxSeedRanges; i++) {
+        almanach->seedRanges[i].start = almanach->seeds[i*2];
+        almanach->seedRanges[i].len   = almanach->seeds[i*2+1];
+    }
+}
+
+unsigned long minimum_location_map_all_seed_ranges(struct Almanach *almanach) {
+    for(int seed_range_no = 0; seed_range_no < almanach->maxSeedRanges; seed_range_no++) {
+        unsigned long min_value = INVALID;
+        struct Range seedRange = almanach->seedRanges[seed_range_no];
+        for(unsigned long l = 0; l < seedRange.len; l++) {
+            unsigned long value = seedRange.start + l;
+            for(int map_no = 0; map_no < almanach->maxMaps; map_no++) {
+                struct Map map = almanach->maps[map_no];
+                value = map_convert(value, map);
+            }
+            if (value < min_value) {
+                min_value = value;
+            }
+        }
+        almanach->minLocations[seed_range_no] = min_value;
+    }
+    unsigned long min = INVALID;
+    for(int i=0; i < almanach->maxSeedRanges; i++) {
+        if( almanach->minLocations[i] < min) {
+            min = almanach->minLocations[i];
+        }
+    }
+    return min;
 }
