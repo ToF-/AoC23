@@ -7,6 +7,8 @@ endif
 
 UNITY_ROOT=unity
 
+CFLAGS=-fmax-errors=2
+
 TEST_TARGET=bin/run_test
 
 TEST_FILES=test/*.c test/runner/*.c

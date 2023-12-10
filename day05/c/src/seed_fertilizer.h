@@ -2,66 +2,69 @@
 #define MAXCONVERTERS 100
 #define MAXMAPS 10
 #define MAXSEEDS 200
+#define MAXRANGES 100
 #define MAXSEEDRANGES 100
 #define INVALID 0xFFFFFFFF
 
-
-
-struct Interval {
+typedef struct {
     unsigned long start;
     unsigned long len;
-};
+} Range;
 
-struct Range {
-    unsigned long start;
-    unsigned long len;
-};
+typedef struct {
+    int maxRanges;
+    Range ranges[MAXRANGES];
+} RangeSet;
 
-struct Converter {
+typedef struct {
     unsigned long dest;
-    struct Range range;
-};
+    Range range;
+} Converter;
 
-struct Map {
+typedef struct {
     int maxConverters;
-    struct Converter converters[MAXCONVERTERS];
-};
+    Converter converters[MAXCONVERTERS];
+} Map;
 
-struct Almanach {
+typedef struct {
     int maxSeeds;
     int maxSeedRanges;
     int maxMaps;
     unsigned long seeds[MAXSEEDS];
     unsigned long minLocations[MAXSEEDRANGES];
-    struct Range seedRanges[MAXSEEDRANGES];
-    struct Map maps[MAXMAPS];
-};
+    Range seedRanges[MAXSEEDRANGES];
+    Map maps[MAXMAPS];
+} Almanach;
 
-struct Split {
-    struct Converter intersect;
-    struct Converter before;
-    struct Converter beyond;
-};
+typedef struct {
+    Range intersect;
+    Range before;
+    Range beyond;
+} Split;
 
-bool read_almanach(struct Almanach *, char *);
+bool read_almanach(Almanach *, char *);
 int scan_ints(unsigned long *,int, char *);
 int scan_seeds(unsigned long *, char *);
-bool scan_converter(struct Converter*, char *);
-int scan_map(struct Map*, char **, int);
-void print_almanach(struct Almanach*);
-unsigned long convert(unsigned long, struct Converter);
-unsigned long map_convert(unsigned long, struct Map);
-unsigned long minimum_location_map_all_seeds(struct Almanach *);
-unsigned long minimum_location_map_all_seed_ranges(struct Almanach *);
-struct Converter id_converter(struct Range);
-struct Split split_converter(struct Converter, struct Converter);
-bool valid_converter(struct Converter);
-void print_split(struct Split);
-void print_converter(struct Converter);
-void split_map(struct Map*, struct Split);
-void print_map(struct Map*);
-void map_map(struct Map*, struct Map *, struct Map*);
-void map_all_maps(struct Map*, struct Map*, struct Almanach *);
-void add_converter(struct Map*, struct Converter);
-void empty_map(struct Map *);
-void append_map(struct Map *, struct Map *);
+bool scan_converter(Converter*, char *);
+int scan_map(Map*, char **, int);
+void print_almanach(Almanach*);
+unsigned long convert(unsigned long, Converter);
+unsigned long map_convert(unsigned long, Map);
+unsigned long minimum_location_map_all_seeds(Almanach *);
+unsigned long minimum_location_map_all_seed_ranges(Almanach *);
+Converter id_converter(Range);
+Split split_range(Range, Converter);
+bool valid_range(Range);
+void print_split(Split);
+void print_converter(Converter);
+void split_map(Map*, Split);
+void print_map(Map*);
+void map_map(Map*, Map *, Map*);
+void map_all_maps(Map*, Map*, Almanach *);
+void add_converter(Map*, Converter);
+
+void add_range(RangeSet*, Range);
+
+void empty_map(Map *);
+void append_map(Map *, Map *);
+unsigned long end(Range);
