@@ -54,6 +54,7 @@ bool has_range(RangeSet *set, Range range) {
 void add_range(RangeSet *set, Range range) {
     if(has_range(set, range))
         return;
+
     set->item[set->count++] = range;
 }
 
@@ -110,7 +111,6 @@ void read_almanach(Almanach *dest, char *filename) {
     int mapCount = 0;
     for(int i=1; i<lineCount; i++) {
         char *line = lines[i];
-        printf("%s\n", line);
         if(strlen(line) == 0 && i > 2) {
             mapCount++;
         } else if(strchr(line, ':')) {
@@ -149,5 +149,47 @@ void convert_range(RangeSet *set, Range range, Converter converter) {
         after.start = inter.start + inter.len;
         after.len = range.start + range.len - after.start;
         add_range(set, after);
+    }
+}
+
+void map_convert_range(RangeSet *result, Range range, ConverterSet *set) {
+    result->count = 0;
+    for(int i=0; i<set->count; i++) {
+        convert_range(result, range, set->item[i]);
+    }
+    if(result->count == 0) {
+        add_range(result, range);
+    }
+}
+
+void print_range(Range range) {
+    printf("%8lu %8lu [%lu..%lu]\n",
+            range.start, range.len,
+            range.start, range_end(range));
+}
+
+void all_maps_range(RangeSet *result, Range range, Almanach *almanach) {
+    RangeSet source;
+    source.count = 0;
+    add_range(&source, range);
+    for(int i = 0; i < 7; i++) {
+        ConverterSet converters = almanach->maps[i];
+        RangeSet dest;
+        dest.count = 0;
+        for(int j=0; j<source.count; j++) {
+            map_convert_range(&dest, source.item[j], &converters);
+        }
+        source.count = 0;
+        append_ranges(&source, &dest);
+        for(int i =0; i<source.count; i++) { print_range(source.item[i]); }
+        getchar();
+    }
+    result->count = 0;
+    append_ranges(result, &source);
+}
+
+void append_ranges(RangeSet *dest, RangeSet *srce) {
+    for(int i = 0; i < srce->count; i++) {
+        add_range(dest, srce->item[i]);
     }
 }
