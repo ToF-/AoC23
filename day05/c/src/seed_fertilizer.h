@@ -38,7 +38,6 @@ struct Almanach {
 };
 
 struct Split {
-    struct Converter original;
     struct Converter intersect;
     struct Converter before;
     struct Converter beyond;
@@ -63,3 +62,6 @@ void split_map(struct Map*, struct Split);
 void print_map(struct Map*);
 void map_map(struct Map*, struct Map *, struct Map*);
 void map_all_maps(struct Map*, struct Map*, struct Almanach *);
+void add_converter(struct Map*, struct Converter);
+void empty_map(struct Map *);
+void append_map(struct Map *, struct Map *);

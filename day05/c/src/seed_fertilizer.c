@@ -2,6 +2,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <assert.h>
 #include "seed_fertilizer.h"
 
@@ -11,6 +12,8 @@ unsigned long min(unsigned long, unsigned long);
 unsigned long max(unsigned long, unsigned long);
 
 void make_seed_ranges(struct Almanach *);
+bool has_converter(struct Map *, struct Converter);
+void append_map(struct Map *, struct Map *);
 
 int scan_ints(unsigned long *dest, int max_to_scan, char *srce) {
     int scanned = 0;
@@ -229,21 +232,18 @@ unsigned long max(unsigned long a, unsigned long b) {
 
 struct Split split_converter(struct Converter original, struct Converter splitter) {
    struct Converter empty = { 0, { 0, 0}};
-   struct Split result = { empty, empty, empty, empty };
+   struct Split result = { empty, empty, empty };
    struct Range intersect_range;
    intersect_range.start = max(original.range.start, splitter.range.start);
    unsigned long intersect_end = min(original.range.start + original.range.len - 1, splitter.range.start + splitter.range.len - 1);
 
    intersect_range.len = intersect_end > intersect_range.start ? intersect_end - intersect_range.start + 1 : 0 ;
-   result.intersect.range = intersect_range;
-   if (!valid_converter(result.intersect)) {
-       result.original = original;
-       result.intersect = empty;
+   if (intersect_range.len == 0)
        return result;
-   }
-   result.original = empty;
+
+   result.intersect.range = intersect_range;
    result.intersect.range.start = intersect_range.start;
-   result.intersect.dest = splitter.dest;
+   result.intersect.dest = result.intersect.range.start + splitter.dest - splitter.range.start;
 
    if(original.range.start < result.intersect.range.start) {
        result.before.dest = original.dest;
@@ -255,7 +255,6 @@ struct Split split_converter(struct Converter original, struct Converter splitte
        result.beyond.range.start = result.beyond.dest;
        result.beyond.range.len = original.range.start + original.range.len - result.beyond.range.start;
    }
-   assert(result.before.range.len + result.intersect.range.len + result.beyond.range.len == original.range.len);
    return result;
 }
 
@@ -264,37 +263,40 @@ bool valid_converter(struct Converter converter) {
 }
 
 void print_split(struct Split split) {
-    printf("\noriginal: %lu %lu %lu [%lu..%lu]\t before: %lu %lu %lu [%lu..%lu]\t intersect: %lu %lu %lu [%lu %lu]\t beyond: %lu %lu %lu [%lu %lu]\n",
-            split.original.dest, split.original.range.start, split.original.range.len, split.original.range.start, split.original.range.start + split.original.range.len - 1,
+    printf("\nbefore: %lu %lu %lu [%lu..%lu]\t intersect: %lu %lu %lu [%lu %lu]\t beyond: %lu %lu %lu [%lu %lu]\n",
             split.before.dest, split.before.range.start, split.before.range.len, split.before.range.start, split.before.range.start + split.before.range.len - 1,
             split.intersect.dest, split.intersect.range.start, split.intersect.range.len, split.intersect.range.start, split.intersect.range.start + split.intersect.range.len - 1,
             split.beyond.dest, split.beyond.range.start, split.beyond.range.len, split.beyond.range.start, split.beyond.range.start + split.beyond.range.len - 1);
 
 }
 void print_converter(struct Converter converter) {
-    printf("%lu %lu %lu [%lu..%lu]\n", converter.dest, converter.range.start, converter.range.len,
-            converter.range.start, converter.range.start + converter.range.len - 1);
+    if(converter.dest != converter.range.start) {
+        printf("%lu %lu %lu | [%lu..%lu]->[%lu..%lu]\n", 
+                converter.dest, converter.range.start, converter.range.len,
+                converter.range.start, converter.range.start + converter.range.len - 1,
+                converter.dest, converter.dest + converter.range.len - 1);
+    } else {
+        printf("%lu %lu %lu | [%lu..%lu]\n", 
+                converter.dest, converter.range.start, converter.range.len,
+                converter.range.start, converter.range.start + converter.range.len - 1);
+    }
 }
 
 void split_map(struct Map *dest, struct Split split) {
-    dest->maxConverters = 0;
+    empty_map(dest);
     if (!valid_converter(split.intersect)) {
-        dest->converters[dest->maxConverters] = split.original;
-        dest->maxConverters++;
         return;
     }
     if (valid_converter(split.before)) {
-        dest->converters[dest->maxConverters] = split.before;
-        dest->maxConverters++;
+        add_converter(dest, split.before);
     }
     if (valid_converter(split.intersect)) {
-        dest->converters[dest->maxConverters] = split.intersect;
-        dest->converters[dest->maxConverters].range.start = dest->converters[dest->maxConverters].dest;
-        dest->maxConverters++;
+        struct Converter new_converter = split.intersect;
+        new_converter.range.start = new_converter.dest;
+        add_converter(dest, new_converter);
     }
     if (valid_converter(split.beyond)) {
-        dest->converters[dest->maxConverters] = split.beyond;
-        dest->maxConverters++;
+        add_converter(dest, split.beyond);
     }
 }
 
@@ -305,50 +307,71 @@ void print_map(struct Map *map) {
 }
 
 void map_map(struct Map *dest, struct Map *srce, struct Map *map) {
-    printf("initial:\n"); print_map(dest);
-    printf("source:\n"); print_map(srce);
-    printf("map:\n"); print_map(map);
-    dest->maxConverters = 0;
+    empty_map(dest);
     for(int i=0; i < srce->maxConverters; i++) {
         struct Converter source = srce->converters[i];
         for(int j=0; j < map->maxConverters; j++) {
             struct Converter converter = map->converters[j];
             struct Split split = split_converter(source, converter);
             struct Map inter;
+            empty_map(&inter);
             split_map(&inter, split);
-            assert(inter.maxConverters > 0);
-            for(int k=0; k<inter.maxConverters; k++) {
-                dest->converters[dest->maxConverters] = inter.converters[k];
-                dest->maxConverters++;
-            }
+            append_map(dest, &inter);
+        }
+        if(dest->maxConverters == 0) {
+            add_converter(dest, source);
         }
     }
-    assert(dest->maxConverters > 0);
-    printf("result:\n"); print_map(dest);
 }
 
 void map_all_maps(struct Map *dest, struct Map*srce, struct Almanach *almanach) {
     struct Map source;
-    for(int i=0; i < srce->maxConverters; i++) {
-        source.converters[i] = srce->converters[i];
-    }
-    source.maxConverters = srce->maxConverters;
+    struct Map inter;
+    empty_map(&source);
+    append_map(&source, srce);
     for(int i=0; i < almanach->maxMaps; i++) {
-        struct Map inter;
-        inter.maxConverters = 0;
+        empty_map(&inter);
+        printf("source:\n");
+        print_map(&source);
+        printf("maps[%d]:\n", i);
+        print_map(&almanach->maps[i]);
         map_map(&inter, &source, &almanach->maps[i]);
-        for(int j=0; j<-inter.maxConverters; j++) {
-            dest->converters[dest->maxConverters] = inter.converters[j];
-            dest->maxConverters++;
-        }
-        for(int j=0; i<inter.maxConverters; i++) {
-            source.converters[i] = inter.converters[i];
-        }
-        source.maxConverters = inter.maxConverters;
+        printf("inter:\n");
+        print_map(&inter);
+        empty_map(&source);
+        append_map(&source, &inter);
     }
-    dest->maxConverters = 0;
-    for(int j=0; j<source.maxConverters; j++) {
-        dest->converters[j] = source.converters[j];
+    empty_map(dest);
+    append_map(dest, &source);
+}
+
+void add_converter(struct Map *dest, struct Converter converter) {
+    if(has_converter(dest, converter))
+            return;
+    if(dest->maxConverters >= MAXCONVERTERS) {
+        perror("max converters exceeded");
+        exit(1);
     }
-    dest->maxConverters = source.maxConverters;
+    dest->converters[dest->maxConverters++] = converter;
+}
+
+bool has_converter(struct Map *map, struct Converter converter) {
+    for(int i = 0; i < map->maxConverters; i++) {
+        struct Converter conv = map->converters[i];
+        if(conv.dest == converter.dest 
+                && conv.range.start == converter.range.start
+                && conv.range.len == converter.range.len)
+            return true;
+    }
+    return false;
+}
+
+void empty_map(struct Map *map) {
+    map->maxConverters = 0;
+}
+
+void append_map(struct Map *dest, struct Map *srce) {
+    for(int i=0; i<srce->maxConverters; i++) {
+        add_converter(dest, srce->converters[i]);
+    }
 }

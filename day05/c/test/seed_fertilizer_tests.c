@@ -152,45 +152,40 @@ TEST(seed_fertilizer, split_no_intersect) {
     printf("initial:");print_converter(id_converter(range));
     printf("converter:");print_converter(converter);
     print_split(split);
-    TEST_ASSERT_EQUAL(79, split.original.dest);
-    TEST_ASSERT_EQUAL(79, split.original.range.start);
-    TEST_ASSERT_EQUAL(14, split.original.range.len);
-    TEST_ASSERT_TRUE(valid_converter(split.original));
     TEST_ASSERT_FALSE(valid_converter(split.before));
     TEST_ASSERT_FALSE(valid_converter(split.intersect));
     TEST_ASSERT_FALSE(valid_converter(split.beyond));
+
 }
 TEST(seed_fertilizer, split_full_intersect) {
     printf("split_full_intersect\n");
     struct Range range = { 79, 14 };
-    struct Converter converter = { 50, { 79, 14 }};
+    struct Converter converter = { 52, { 79, 14 }};
     printf("initial:");print_converter(id_converter(range));
     printf("converter:");print_converter(converter);
     struct Split split = split_converter(id_converter(range), converter);
     print_split(split);
     TEST_ASSERT_TRUE(valid_converter(split.intersect));
-    TEST_ASSERT_EQUAL(50, split.intersect.dest);
+    TEST_ASSERT_EQUAL(52, split.intersect.dest);
     TEST_ASSERT_EQUAL(79, split.intersect.range.start);
     TEST_ASSERT_EQUAL(14, split.intersect.range.len);
 
-    TEST_ASSERT_FALSE(valid_converter(split.original));
     TEST_ASSERT_FALSE(valid_converter(split.before));
     TEST_ASSERT_FALSE(valid_converter(split.beyond));
 }
 TEST(seed_fertilizer, split_intersect_with_before) {
     printf("split_intersect_with_before\n");
-    struct Range range = { 49, 44 };
-    struct Converter converter = { 50, { 79, 14 }};
+    struct Range range = { 49, 14 };
+    struct Converter converter = { 52, { 50, 48 }};
     print_converter(id_converter(range));
     print_converter(converter);
     struct Split split = split_converter(id_converter(range), converter);
     print_split(split);
     TEST_ASSERT_TRUE(valid_converter(split.intersect));
-    TEST_ASSERT_EQUAL(50, split.intersect.dest);
+    TEST_ASSERT_EQUAL(81, split.intersect.dest);
     TEST_ASSERT_EQUAL(79, split.intersect.range.start);
     TEST_ASSERT_EQUAL(14, split.intersect.range.len);
 
-    TEST_ASSERT_FALSE(valid_converter(split.original));
     TEST_ASSERT_EQUAL(49, split.before.dest);
     TEST_ASSERT_EQUAL(49, split.before.range.start);
     TEST_ASSERT_EQUAL(30, split.before.range.len);
@@ -210,7 +205,6 @@ TEST(seed_fertilizer, split_intersect_with_beyond) {
     TEST_ASSERT_EQUAL(79, split.intersect.range.start);
     TEST_ASSERT_EQUAL(14, split.intersect.range.len);
 
-    TEST_ASSERT_FALSE(valid_converter(split.original));
     TEST_ASSERT_EQUAL(93, split.beyond.dest);
     TEST_ASSERT_EQUAL(93, split.beyond.range.start);
     TEST_ASSERT_EQUAL(20, split.beyond.range.len);
@@ -239,7 +233,6 @@ TEST(seed_fertilizer, split_map) {
     TEST_ASSERT_EQUAL(93, result.converters[2].range.start);
     TEST_ASSERT_EQUAL(20, result.converters[2].range.len);
     print_map(&result);
-    getchar();
 }
 
 TEST(seed_fertilizer, map_map) {
@@ -248,28 +241,71 @@ TEST(seed_fertilizer, map_map) {
     struct Range range = { 79, 14 };
     read_almanach(&almanach, "../data/sample.txt");
     struct Map source;
-    source.converters[0] = id_converter(range);
-    source.maxConverters = 1;
+    empty_map(&source);
+    add_converter(&source, id_converter(range));
+    printf("source:\n");
+    print_map(&source);
+    printf("map[0]:\n");
+    print_map(&almanach.maps[0]);
     struct Map result;
-    struct Map first = almanach.maps[0];
-    struct Map second = almanach.maps[1];
-    map_map(&result, &source, &first);
-    for(int i=0; i<result.maxConverters; i++)
-        source.converters[i] = result.converters[i];
-    source.maxConverters = result.maxConverters;
-    result.maxConverters = 0;
-    map_map(&result, &source, &second);
+    empty_map(&result);
+    map_map(&result, &source, &almanach.maps[0]);
+    printf("result:\n");
+    print_map(&result);
+    TEST_ASSERT_EQUAL(1, result.maxConverters);
+    TEST_ASSERT_EQUAL(52, result.converters[0].dest);
+    TEST_ASSERT_EQUAL(52, result.converters[0].range.start);
+    TEST_ASSERT_EQUAL(14, result.converters[0].range.len);
+    empty_map(&source);
+    append_map(&source, &result);
+    empty_map(&result);
+    printf("map[1]:\n");
+    print_map(&almanach.maps[1]);
+    empty_map(&result);
+    map_map(&result, &source, &almanach.maps[1]);
+    printf("result:\n");
+    print_map(&result);
+    map_map(&result, &source, &almanach.maps[2]);
 }
+TEST(seed_fertilizer, map_map_no_split) {
+    printf("map_map_no_split\n");
+    struct Almanach almanach;
+    struct Range range = { 9, 14 };
+    read_almanach(&almanach, "../data/sample.txt");
+    struct Map source;
+    empty_map(&source);
+    add_converter(&source, id_converter(range));
+    printf("source:\n");
+    print_map(&source);
+    printf("map[0]:\n");
+    print_map(&almanach.maps[0]);
+    struct Map result;
+    empty_map(&result);
+    map_map(&result, &source, &almanach.maps[0]);
+    TEST_ASSERT_EQUAL(1, result.maxConverters);
+    TEST_ASSERT_EQUAL(9, result.converters[0].dest);
+    TEST_ASSERT_EQUAL(9, result.converters[0].range.start);
+    TEST_ASSERT_EQUAL(14, result.converters[0].range.len);
+    printf("result:\n");
+    print_map(&result);
+}
+
 TEST(seed_fertilizer, map_all_maps) {
     printf("map_all_maps\n");
     struct Almanach almanach;
-    struct Range range = { 79, 14 };
+    struct Range range;
     read_almanach(&almanach, "../data/sample.txt");
     struct Map result;
+    empty_map(&result);
     struct Map source;
-    source.converters[0] = id_converter(range);
-    source.maxConverters = 1;
+    empty_map(&source);
+    range = (struct Range){ 79, 14 };
+    add_converter(&source, id_converter(range));
+    range = (struct Range){ 55, 13 };  
+    add_converter(&source, id_converter(range));
     map_all_maps(&result, &source, &almanach);
+    printf("result:\n");
+    print_map(&result);
 }
 
 
