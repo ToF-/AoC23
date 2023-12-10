@@ -1,5 +1,6 @@
 #include "stdbool.h"
 #include "string.h"
+#include "assert.h"
 #include "unity.h"
 #include "unity_fixture.h"
 #include "unity_memory.h"
@@ -46,7 +47,8 @@ TEST(seed_fertilizer, map_range_no_intersect) {
     RangeSet result;
     result.count = 0;
     Range range = { 1, 2 };
-    ConverterSet set;
+    ConverterSet set = new_ConverterSet();
+    set.count = 0;
     add_converter(&set, (Converter){ 50, { 79, 14 }});
     add_converter(&set, (Converter){ 52, { 50, 48 }}); 
     map_convert_range(&result, range, &set);
@@ -58,8 +60,7 @@ TEST(seed_fertilizer, map_range_no_intersect) {
 TEST(seed_fertilizer, map_range_with_intersect) {
     RangeSet result;
     Range range = { 1, 100 };
-    ConverterSet set;
-    set.count = 0;
+    ConverterSet set = new_ConverterSet();
     add_converter(&set, (Converter){ 50, { 98, 2 }}); // 1,97 50,2, 100,1
     add_converter(&set, (Converter){ 52, { 50, 48 }}); 
     map_convert_range(&result, range, &set);
@@ -72,13 +73,24 @@ TEST(seed_fertilizer, map_range_with_intersect) {
     TEST_ASSERT_EQUAL(98, result.item[5].start); TEST_ASSERT_EQUAL(3, result.item[5].len);
 }
 
-TEST(seed_fertilizer, all_maps_range) {
+TEST(seed_fertilizer, all_maps_all_ranges) {
     RangeSet result;
-    Range range = { 79, 14 };
     Almanach almanach;
     read_almanach(&almanach, "../data/sample.txt");
-    all_maps_range(&result, range, &almanach);
-    for(int i = 0; i < result.count; i++) {
-        print_range(result.item[i]);
-    }
+    all_maps_ranges(&result, &almanach.seedRanges, &almanach);
+    for(int i=0; i<result.count; i++) print_range(result.item[i]);
+    TEST_ASSERT_EQUAL(46, minimum(&result));
 }
+TEST(seed_fertilizer, solve_puzzle_part_two) {
+    RangeSet result;
+    Almanach almanach;
+    almanach.seedRanges.count = 0;
+    read_almanach(&almanach, "../data/puzzle.txt");
+    for(int i=0; i<almanach.seedRanges.count; i++) print_range(almanach.seedRanges.item[i]);
+    getchar();
+    all_maps_ranges(&result, &almanach.seedRanges, &almanach);
+    for(int i=0; i<result.count; i++) print_range(result.item[i]);
+    TEST_ASSERT_EQUAL(46, minimum(&result));
+}
+
+
