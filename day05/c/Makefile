@@ -3,11 +3,13 @@ CLEANUP = rm -f
 C_COMPILER=gcc
 ifeq ($(shell uname -s), Darwin)
 C_COMPILER=clang
+CFLAGS=-ferror-limit=5
+else
+CFLAGS=-fmax-errors=5
 endif
 
 UNITY_ROOT=unity
 
-CFLAGS=-fmax-errors=2
 
 TEST_TARGET=bin/run_test
 

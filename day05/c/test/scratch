@@ -1,3 +1,75 @@
+TEST(seed_fertilizer, read_puzzle) {
+    printf("read_puzzle\n");
+    Almanach almanach;
+    bool result;
+    result = read_almanach(&almanach, "../data/puzzle.txt");
+    TEST_ASSERT_TRUE(result);
+    TEST_ASSERT_EQUAL(7, almanach.maxMaps);
+}
+
+TEST(seed_fertilizer, convert) {
+    printf("convert\n");
+    Converter converter = { 50, { 98, 2 }};
+    TEST_ASSERT_EQUAL(50, convert(98, converter));
+    TEST_ASSERT_EQUAL(51, convert(99, converter));
+    TEST_ASSERT_EQUAL(INVALID, convert(100, converter));
+    TEST_ASSERT_EQUAL(INVALID, convert(97, converter));
+}
+
+TEST(seed_fertilizer, map) {
+    printf("map\n");
+    Map map = { 2, .converters = {{ 50, { 98, 2 }}, { 52, { 50, 48 }}}};
+    TEST_ASSERT_EQUAL(49, map_convert(49, map));
+    TEST_ASSERT_EQUAL(50, map_convert(98, map));
+    TEST_ASSERT_EQUAL(52, map_convert(50, map));
+    TEST_ASSERT_EQUAL(99, map_convert(97, map));
+    TEST_ASSERT_EQUAL(100, map_convert(100,map));
+}
+
+TEST(seed_fertilizer, minimum_map_all_seeds) {
+    printf("minimum_map_all_seeds\n");
+    Almanach almanach;
+    read_almanach(&almanach, "../data/sample.txt");
+    TEST_ASSERT_EQUAL(4, almanach.maxSeeds);
+    unsigned long result = minimum_location_map_all_seeds(&almanach);
+    TEST_ASSERT_EQUAL(35, result);
+}
+TEST(seed_fertilizer, solve_puzzle_part_one) {
+    printf("solve_puzzle_part_one\n");
+    Almanach almanach;
+    read_almanach(&almanach, "../data/puzzle.txt");
+    TEST_ASSERT_EQUAL(20, almanach.maxSeeds);
+    unsigned long result = minimum_location_map_all_seeds(&almanach);
+    TEST_ASSERT_EQUAL(178159714, result);
+}
+TEST(seed_fertilizer, seed_ranges) {
+    printf("seed_ranges\n");
+    Almanach almanach;
+    read_almanach(&almanach, "../data/sample.txt");
+    TEST_ASSERT_EQUAL(2, almanach.maxSeedRanges);
+
+    TEST_ASSERT_EQUAL(79, almanach.seedRanges[0].start);
+    TEST_ASSERT_EQUAL(14, almanach.seedRanges[0].len);
+    TEST_ASSERT_EQUAL(55, almanach.seedRanges[1].start);
+    TEST_ASSERT_EQUAL(13, almanach.seedRanges[1].len);
+}
+
+TEST(seed_fertilizer, minimum_map_all_seed_ranges) {
+    printf("minimum_map_all_seed_ranges\n");
+    Almanach almanach;
+    read_almanach(&almanach, "../data/sample.txt");
+    unsigned long result = minimum_location_map_all_seed_ranges(&almanach);
+    TEST_ASSERT_EQUAL(46, result);
+}
+
+TEST(seed_fertilizer, solve_puzzle_part_two_brute_force) {
+    printf("solve_puzzle_part_two_brute_force\n");
+    Almanach almanach;
+    read_almanach(&almanach, "../data/puzzle.txt");
+//    unsigned long result = minimum_location_map_all_seed_ranges(&almanach);
+//    TEST_ASSERT_EQUAL(46, result);
+}
+
 
 TEST(seed_fertilizer, id_converter) {
     printf("id_converter\n");
