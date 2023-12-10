@@ -36,3 +36,5 @@ bool has_range(RangeSet *, Range);
 void add_range(RangeSet *, Range);
 void add_converter(ConverterSet *, Converter);
 void read_almanach(Almanach *, char *);
+void convert_range(RangeSet *, Range, Converter);
+unsigned long range_end(Range);

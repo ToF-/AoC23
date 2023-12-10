@@ -4,6 +4,8 @@
 #include <ctype.h>
 #include <assert.h>
 #include "seed_fertilizer.h"
+#define MIN(a,b) (a < b ? a : b)
+#define MAX(a,b) (a > b ? a : b)
 
 int scan_int(unsigned long *, int, char *);
 int scan_values(unsigned long *, char *);
@@ -55,6 +57,10 @@ void add_range(RangeSet *set, Range range) {
     set->item[set->count++] = range;
 }
 
+unsigned long range_end(Range range) {
+    return range.start + range.len - 1;
+}
+
 void add_converter(ConverterSet *set, Converter converter) {
     set->item[set->count++] = converter;
 }
@@ -71,7 +77,7 @@ void read_almanach(Almanach *dest, char *filename) {
     while(fgets(line, MAXLINE, file) != NULL) {
         lineCount++;
     }
-    lines = (char **)malloc(lineCount * sizeof(char *));
+    lines = (char **)malloc((lineCount + 1)* sizeof(char *));
     if(lines == NULL) {
         perror("memory allocation error");
         fclose(file);
@@ -92,11 +98,9 @@ void read_almanach(Almanach *dest, char *filename) {
         }
         strcpy(lines[i], line);
     }
-    if(!strcmp(lines[lineCount-1],"")) {
-        lines[lineCount] = (char *)malloc(strlen("  ")+1);
-        strcpy(lines[lineCount],"  ");
-        lineCount++;
-    }
+    lines[lineCount] = (char *)malloc(strlen("")+1);
+    strcpy(lines[lineCount],"");
+    lineCount++;
     fclose(file);
     dest->valueCount = scan_values(dest->values, lines[0]);
     for(int i=0; i<dest->valueCount; i+=2) {
@@ -106,6 +110,7 @@ void read_almanach(Almanach *dest, char *filename) {
     int mapCount = 0;
     for(int i=1; i<lineCount; i++) {
         char *line = lines[i];
+        printf("%s\n", line);
         if(strlen(line) == 0 && i > 2) {
             mapCount++;
         } else if(strchr(line, ':')) {
@@ -118,5 +123,31 @@ void read_almanach(Almanach *dest, char *filename) {
     for(int i=0; i<lineCount; i++) {
         free(lines[i]);
     }
-    assert(false);
+}
+
+void convert_range(RangeSet *set, Range range, Converter converter) {
+    Range inter;
+
+    inter.start = MAX(range.start, converter.range.start);
+    unsigned long inter_end = MIN(range_end(range), range_end(converter.range));
+    inter.len = inter_end > inter.start ? inter_end - inter.start + 1 : 0;
+    if(inter.len == 0)
+        return;
+
+    if(range.start < inter.start) {
+        Range before;
+        before.start = range.start;
+        before.len = inter.start - before.start;
+        add_range(set, before);
+    }
+    Range convert;
+    convert.start = inter.start + converter.dest - converter.range.start;
+    convert.len = inter.len;
+    add_range(set, convert);
+    if(range_end(range) > range_end(inter)) {
+        Range after;
+        after.start = inter.start + inter.len;
+        after.len = range.start + range.len - after.start;
+        add_range(set, after);
+    }
 }
