@@ -57,6 +57,7 @@ void add_range(RangeSet *set, Range range) {
     if(has_range(set, range))
         return;
 
+    assert(set->count < MAXRANGES);
     set->item[set->count++] = range;
 }
 
@@ -175,6 +176,37 @@ void convert_range(RangeSet *converted, RangeSet *remaining, Range range, Conver
     }
 }
 
+// R0 C0-> R01,R02,R03 
+// R01 C1 => R011 R012 R013
+// R02 C1 => R021 R022 R023
+// R03 C1 => R031 R032 R033
+//
+// convert first range through first converter 
+// if conversion -> call 
+
+void map_convert_ranges_all_map_level(RangeSet *result, RangeSet *current, int level, Almanach *almanach) {
+#ifdef DEBUG
+    printf("level:%d\n",level);
+    printf("current:\n");
+    print_ranges(current);
+    printf("result size:%d\n", result->count);
+#endif
+    if(level >= MAXMAPS) {
+        append_ranges(result, current);
+        return;
+    }
+    ConverterSet converters = almanach->maps[level];
+    RangeSet *work = (RangeSet *)malloc(sizeof(RangeSet));
+    RangeSet *temp = (RangeSet *)malloc(sizeof(RangeSet));
+    copy_ranges(work, current);
+    for(int r=0; r<work->count; r++) {
+        Range range = work->item[r];
+        map_convert_range(temp, range, &converters);
+        map_convert_ranges_all_map_level(result, temp, level+1, almanach);
+    }
+    free(temp);
+    free(work);
+}
 // convert a range through a set of converter, each remaining range from a conversion
 // being processed with the next converter in the set
 // all remaining ranges after the next converter is processed are added to the result
@@ -185,30 +217,20 @@ void map_convert_range(RangeSet *result, Range range, ConverterSet *converters) 
     empty_ranges(result);
     empty_ranges(work);
     add_range(work, range);
-#ifdef DEBUG
-    printf("ranges to convert\n"); print_range_set(work);
-#endif
     for(int c=0; c<converters->count; c++) {
 #ifdef DEBUG
+        printf("ranges to convert\n"); print_ranges(work);
         printf("current converter:\t"); print_converter(converters->item[c]); printf("\n");
 #endif
         for(int w=0; w<work->count; w++) {
             convert_range(result, remaining, work->item[w], converters->item[c]);
         }
-#ifdef DEBUG
-    printf("current result\n"); print_range_set(result);
-    printf("remaining\n"); print_range_set(remaining);
-    getchar();
-#endif
         copy_ranges(work, remaining);
         empty_ranges(remaining);
     }
     append_ranges(result, work);
     free(remaining);
     free(work);
-#ifdef DEBUG
-    printf("final result\n"); print_range_set(result);
-#endif
 }
 
 // convert a range through all 7 sets of converters
@@ -225,6 +247,11 @@ void map_convert_range_all_maps(RangeSet *result, Range range, ConverterSet *map
         empty_ranges(temp);
         for(int r = 0; r < work->count; r++) {
             map_convert_range(temp, work->item[r], &converters);
+#ifdef DEBUG
+        printf("------------------ map#%d done with result:\n", m);
+        print_ranges(temp);
+        getchar();
+#endif
             copy_ranges(work, temp);
         }
     }
@@ -283,7 +310,7 @@ unsigned long minimum_all_maps_ranges(Almanach *almanach) {
         source->count = 0;
         add_range(source, almanach->seedRanges.item[i]);
         for(int j = 0; j < MAXMAPS; j++) {
-            printf("map %d\n",j); print_range_set(source); printf("\n");
+            printf("map %d\n",j); print_ranges(source); printf("\n");
             ConverterSet converters = almanach->maps[j];
             printf("converters\n");
             print_converter_set(&converters);
@@ -311,7 +338,7 @@ unsigned long minimum(RangeSet *ranges) {
     return min;
 }
 
-void print_range_set(RangeSet *set) {
+void print_ranges(RangeSet *set) {
     for(int i = 0; i < set->count; i++) {
         print_range(set->item[i]);
     }
