@@ -7,5 +7,4 @@ TEST_GROUP_RUNNER(seed_fertilizer) {
     RUN_TEST_CASE(seed_fertilizer, map_range_no_intersect);
     RUN_TEST_CASE(seed_fertilizer, map_range_with_intersect);
     RUN_TEST_CASE(seed_fertilizer, all_maps_all_ranges);
-    RUN_TEST_CASE(seed_fertilizer, solve_puzzle_part_two);
 }

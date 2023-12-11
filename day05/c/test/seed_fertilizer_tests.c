@@ -74,23 +74,11 @@ TEST(seed_fertilizer, map_range_with_intersect) {
 }
 
 TEST(seed_fertilizer, all_maps_all_ranges) {
-    RangeSet result;
+    unsigned long result;
     Almanach almanach;
     read_almanach(&almanach, "../data/sample.txt");
-    all_maps_ranges(&result, &almanach.seedRanges, &almanach);
-    for(int i=0; i<result.count; i++) print_range(result.item[i]);
-    TEST_ASSERT_EQUAL(46, minimum(&result));
-}
-TEST(seed_fertilizer, solve_puzzle_part_two) {
-    RangeSet result;
-    Almanach almanach;
-    almanach.seedRanges.count = 0;
-    read_almanach(&almanach, "../data/puzzle.txt");
-    for(int i=0; i<almanach.seedRanges.count; i++) print_range(almanach.seedRanges.item[i]);
-    getchar();
-    all_maps_ranges(&result, &almanach.seedRanges, &almanach);
-    for(int i=0; i<result.count; i++) print_range(result.item[i]);
-    TEST_ASSERT_EQUAL(46, minimum(&result));
+    result = minimum_all_maps_ranges(&almanach);
+    TEST_ASSERT_EQUAL(46, result);
 }
 
 

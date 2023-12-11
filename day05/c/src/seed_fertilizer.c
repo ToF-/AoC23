@@ -214,37 +214,35 @@ void append_ranges(RangeSet *dest, RangeSet *srce) {
     }
 }
 
-void all_maps_ranges(RangeSet *result, RangeSet *ranges, Almanach *almanach) {
+unsigned long minimum_all_maps_ranges(Almanach *almanach) {
+    unsigned long min = ULONG_MAX;
     RangeSet *source = (RangeSet *)malloc(sizeof(RangeSet));
-    RangeSet *dest = (RangeSet *)malloc(sizeof(RangeSet));
-    RangeSet *level= (RangeSet *)malloc(sizeof(RangeSet));
-    source->count = 0;
-    append_ranges(source, ranges);
-    for(int i = 0; i < 7; i++) {
-        level->count = 0;
-        ConverterSet *converters = &almanach->maps[i];
-        printf("\nsource at %d\n",i);
-        for(int j = 0; j < source->count; j++) print_range(source->item[j]);
-        getchar();
-        printf("\nconverters at %d\n", i);
-        for(int k = 0; k < converters->count; k++) print_converter(converters->item[k]);
-        level->count = 0;
-        for(int j = 0; j < source->count; j++) {
-            dest->count = 0;
-            map_convert_range(dest, source->item[j], converters);
-            append_ranges(level, dest);
-        }
+    RangeSet *work= (RangeSet *)malloc(sizeof(RangeSet));
+    for(int i = 0; i < almanach->seedRanges.count; i++) {
+        printf("seed range %d:",i); print_range(almanach->seedRanges.item[i]); printf("\n");
         source->count = 0;
-        assert(level->count < MAXRANGES);
-        append_ranges(source, level);
-
+        add_range(source, almanach->seedRanges.item[i]);
+        for(int j = 0; j < MAXMAPS; j++) {
+            printf("map %d\n",j); print_range_set(source); printf("\n");
+            ConverterSet converters = almanach->maps[j];
+            printf("converters\n");
+            print_converter_set(&converters);
+            getchar();
+            work->count = 0;
+            for(int k = 0; k < source->count; k++) {
+                Range range = source->item[k];
+                map_convert_range(work, range, &converters);
+            }
+            source->count = 0;
+            append_ranges(source, work);
+        }
+        min = MIN(minimum(source), min);
+        printf("%lu\n", min);
+        getchar();
     }
-    result->count = 0;
-    printf("final\n");
-    append_ranges(result, source);
     free(source);
-    free(level);
-    free(dest);
+    free(work);
+    return min;
 }
 
 unsigned long minimum(RangeSet *ranges) {
@@ -253,4 +251,18 @@ unsigned long minimum(RangeSet *ranges) {
         min = MIN(ranges->item[i].start, min);
     }
     return min;
+}
+
+void print_range_set(RangeSet *set) {
+    for(int i = 0; i < set->count; i++) {
+        print_range(set->item[i]);
+    }
+    printf("\n");
+}
+
+void print_converter_set(ConverterSet *set) {
+    for(int i = 0; i < set->count; i++) {
+        print_converter(set->item[i]);
+    }
+    printf("\n");
 }
