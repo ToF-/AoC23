@@ -48,4 +48,6 @@ void print_converter_set(ConverterSet *);
 void all_maps_range(RangeSet *, Range, Almanach *);
 unsigned long minimum_all_maps_ranges(Almanach *);
 void append_ranges(RangeSet *, RangeSet *);
+void copy_ranges(RangeSet *, RangeSet *);
+void empty_ranges(RangeSet *);
 unsigned long minimum(RangeSet *);

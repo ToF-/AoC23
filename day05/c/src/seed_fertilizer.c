@@ -175,20 +175,14 @@ void convert_range(RangeSet *converted, RangeSet *remaining, Range range, Conver
 void map_convert_range(RangeSet *result, Range range, ConverterSet *converters) {
     RangeSet *remaining = (RangeSet *)malloc(sizeof(RangeSet));
     RangeSet *work =      (RangeSet *)malloc(sizeof(RangeSet));
-    result->count = 0;
-    work->count = 0;
+    empty_ranges(result);
+    empty_ranges(work);
     add_range(work, range);
     for(int c=0; c<converters->count; c++) {
-        printf("converter:");print_converter(converters->item[c]);printf("\n");
-        printf("work:\n"); print_range_set(work); printf("\n");
         for(int w=0; w<work->count; w++) {
             convert_range(result, remaining, work->item[w], converters->item[c]);
         }
-        printf("result:\n"); print_range_set(result); printf("\n");
-        printf("remaining:\n"); print_range_set(remaining); printf("\n");
-        work->count = 0;
-        append_ranges(work, remaining);
-        remaining->count = 0;
+        copy_ranges(work, remaining);
     }
     append_ranges(result, work);
     free(remaining);
@@ -217,17 +211,25 @@ void all_maps_range(RangeSet *result, Range range, Almanach *almanach) {
         for(int j=0; j<source.count; j++) {
             map_convert_range(&dest, source.item[j], &converters);
         }
-        source.count = 0;
-        append_ranges(&source, &dest);
+        copy_ranges(&source, &dest);
     }
     result->count = 0;
     append_ranges(result, &source);
+}
+
+void empty_ranges(RangeSet *dest) {
+    dest->count = 0;
 }
 
 void append_ranges(RangeSet *dest, RangeSet *srce) {
     for(int i = 0; i < srce->count; i++) {
         add_range(dest, srce->item[i]);
     }
+}
+
+void copy_ranges(RangeSet *dest, RangeSet *srce) {
+    empty_ranges(dest);
+    append_ranges(dest, srce);
 }
 
 unsigned long minimum_all_maps_ranges(Almanach *almanach) {
