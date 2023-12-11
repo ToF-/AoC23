@@ -142,6 +142,9 @@ void read_almanach(Almanach *dest, char *filename) {
     }
 }
 
+// convert a range via a converter, producing two sets of ranges:
+// converted : the intersection between range and converter, mapped to the converter offset
+// remaining : the ranges that don't intersect with the converter
 void convert_range(RangeSet *converted, RangeSet *remaining, Range range, Converter converter) {
     Range inter;
 
@@ -172,21 +175,60 @@ void convert_range(RangeSet *converted, RangeSet *remaining, Range range, Conver
     }
 }
 
+// convert a range through a set of converter, each remaining range from a conversion
+// being processed with the next converter in the set
+// all remaining ranges after the next converter is processed are added to the result
 void map_convert_range(RangeSet *result, Range range, ConverterSet *converters) {
     RangeSet *remaining = (RangeSet *)malloc(sizeof(RangeSet));
     RangeSet *work =      (RangeSet *)malloc(sizeof(RangeSet));
+    empty_ranges(remaining);
     empty_ranges(result);
     empty_ranges(work);
     add_range(work, range);
+#ifdef DEBUG
+    printf("ranges to convert\n"); print_range_set(work);
+#endif
     for(int c=0; c<converters->count; c++) {
+#ifdef DEBUG
+        printf("current converter:\t"); print_converter(converters->item[c]); printf("\n");
+#endif
         for(int w=0; w<work->count; w++) {
             convert_range(result, remaining, work->item[w], converters->item[c]);
         }
+#ifdef DEBUG
+    printf("current result\n"); print_range_set(result);
+    printf("remaining\n"); print_range_set(remaining);
+    getchar();
+#endif
         copy_ranges(work, remaining);
+        empty_ranges(remaining);
     }
     append_ranges(result, work);
     free(remaining);
     free(work);
+#ifdef DEBUG
+    printf("final result\n"); print_range_set(result);
+#endif
+}
+
+// convert a range through all 7 sets of converters
+void map_convert_range_all_maps(RangeSet *result, Range range, ConverterSet *maps) {
+    RangeSet *work = (RangeSet *)malloc(sizeof(RangeSet));
+    RangeSet *temp = (RangeSet *)malloc(sizeof(RangeSet));
+    empty_ranges(work);
+    add_range(work, range);
+    for(int m = 0; m < 7; m++) {
+#ifdef DEBUG
+        printf("################# map#%d\n", m);
+#endif
+        ConverterSet converters = maps[m];
+        empty_ranges(temp);
+        for(int r = 0; r < work->count; r++) {
+            map_convert_range(temp, work->item[r], &converters);
+            copy_ranges(work, temp);
+        }
+    }
+    copy_ranges(result, work);
 }
 
 void print_range(Range range) {

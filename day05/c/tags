@@ -29,7 +29,7 @@ CurrentTestLineNumber	unity/src/unity_internals.h	/^    UNITY_LINE_TYPE CurrentT
 CurrentTestName	unity/src/unity_internals.h	/^    const char* CurrentTestName;$/;"	m	struct:UNITY_STORAGE_T
 CurrentTestStartTime	unity/src/unity_internals.h	/^    UNITY_TIME_TYPE CurrentTestStartTime;$/;"	m	struct:UNITY_STORAGE_T
 CurrentTestStopTime	unity/src/unity_internals.h	/^    UNITY_TIME_TYPE CurrentTestStopTime;$/;"	m	struct:UNITY_STORAGE_T
-DEBUG	src/seed_fertilizer.c	/^#define DEBUG$/;"	d	file:
+DEBUG	src/seed_fertilizer.c	/^#undef DEBUG$/;"	d	file:
 DEFINES	unity/extras/memory/test/Makefile	/^DEFINES = -D UNITY_OUTPUT_CHAR=UnityOutputCharSpy_OutputChar$/;"	m
 DOUBLES_EQUAL	unity/extras/fixture/src/unity_fixture.h	/^#define DOUBLES_EQUAL(/;"	d
 EXPAND_AND_USE_2ND	unity/extras/memory/test/unity_memory_Test.c	/^#define EXPAND_AND_USE_2ND(/;"	d	file:
@@ -1031,13 +1031,13 @@ Verbose	unity/extras/fixture/src/unity_fixture_internals.h	/^    int Verbose;$/;
 add_converter	src/seed_fertilizer.c	/^void add_converter(ConverterSet *set, Converter converter) {$/;"	f
 add_range	src/seed_fertilizer.c	/^void add_range(RangeSet *set, Range range) {$/;"	f
 all_maps_range	src/seed_fertilizer.c	/^void all_maps_range(RangeSet *result, Range range, Almanach *almanach) {$/;"	f
-all_maps_ranges	src/seed_fertilizer.c	/^void all_maps_ranges(RangeSet *result, RangeSet *ranges, Almanach *almanach) {$/;"	f
 announceTestRun	unity/extras/fixture/src/unity_fixture.c	/^static void announceTestRun(unsigned int runNumber)$/;"	f	file:
 append_ranges	src/seed_fertilizer.c	/^void append_ranges(RangeSet *dest, RangeSet *srce) {$/;"	f
 buffer	unity/extras/memory/test/unity_output_Spy.c	/^static char* buffer;$/;"	v	file:
 calloc	unity/extras/memory/src/unity_memory.c	/^#undef calloc$/;"	d	file:
 calloc	unity/extras/memory/src/unity_memory.h	/^#define calloc /;"	d
-convert_range	src/seed_fertilizer.c	/^void convert_range(RangeSet *set, Range range, Converter converter) {$/;"	f
+convert_range	src/seed_fertilizer.c	/^void convert_range(RangeSet *converted, RangeSet *remaining, Range range, Converter converter) {$/;"	f
+copy_ranges	src/seed_fertilizer.c	/^void copy_ranges(RangeSet *dest, RangeSet *srce) {$/;"	f
 count	src/seed_fertilizer.h	/^    int count;$/;"	m	struct:__anon6
 count	src/seed_fertilizer.h	/^    int count;$/;"	m	struct:__anon8
 count	unity/extras/memory/test/unity_output_Spy.c	/^static int count;$/;"	v	file:
@@ -1045,6 +1045,7 @@ d	unity/src/unity.c	/^    double d;$/;"	m	union:__anon1	file:
 dashRNotLast	unity/extras/fixture/test/unity_fixture_Test.c	/^static const char* dashRNotLast[] = {$/;"	v	file:
 data	unity/extras/fixture/test/template_fixture_tests.c	/^static int data = -1;$/;"	v	file:
 dest	src/seed_fertilizer.h	/^    unsigned long dest;$/;"	m	struct:__anon7
+empty_ranges	src/seed_fertilizer.c	/^void empty_ranges(RangeSet *dest) {$/;"	f
 end	unity/extras/memory/src/unity_memory.c	/^static const char end[] = "END";$/;"	v	file:
 f	unity/src/unity.c	/^    float f;$/;"	m	union:__anon1	file:
 free	unity/extras/memory/src/unity_memory.c	/^#undef free$/;"	d	file:
@@ -1076,8 +1077,10 @@ malloc	unity/extras/memory/src/unity_memory.c	/^#undef malloc$/;"	d	file:
 malloc	unity/extras/memory/src/unity_memory.h	/^#define malloc /;"	d
 malloc_count	unity/extras/memory/src/unity_memory.c	/^static int malloc_count;$/;"	v	file:
 malloc_fail_countdown	unity/extras/memory/src/unity_memory.c	/^static int malloc_fail_countdown = MALLOC_DONT_FAIL;$/;"	v	file:
-map_convert_range	src/seed_fertilizer.c	/^void map_convert_range(RangeSet *result, Range range, ConverterSet *set) {$/;"	f
+map_convert_range	src/seed_fertilizer.c	/^void map_convert_range(RangeSet *result, Range range, ConverterSet *converters) {$/;"	f
 maps	src/seed_fertilizer.h	/^    ConverterSet maps[MAXMAPS];$/;"	m	struct:__anon9
+minimum	src/seed_fertilizer.c	/^unsigned long minimum(RangeSet *ranges) {$/;"	f
+minimum_all_maps_ranges	src/seed_fertilizer.c	/^unsigned long minimum_all_maps_ranges(Almanach *almanach) {$/;"	f
 multiple	unity/extras/fixture/test/unity_fixture_Test.c	/^static const char* multiple[] = {$/;"	v	file:
 mygroup	unity/extras/fixture/test/template_fixture_tests.c	/^TEST_GROUP(mygroup);$/;"	v
 name	unity/extras/fixture/test/unity_fixture_Test.c	/^static const char* name[] = {$/;"	v	file:
@@ -1096,7 +1099,9 @@ pointer3	unity/extras/fixture/test/unity_fixture_Test.c	/^static int* pointer3 =
 pointer_index	unity/extras/fixture/src/unity_fixture.c	/^static int pointer_index = 0;$/;"	v	file:
 pointer_store	unity/extras/fixture/src/unity_fixture.c	/^static struct PointerPair pointer_store[UNITY_MAX_POINTERS];$/;"	v	typeref:struct:PointerPair	file:
 print_converter	src/seed_fertilizer.c	/^void print_converter(Converter converter) {$/;"	f
+print_converter_set	src/seed_fertilizer.c	/^void print_converter_set(ConverterSet *set) {$/;"	f
 print_range	src/seed_fertilizer.c	/^void print_range(Range range) {$/;"	f
+print_range_set	src/seed_fertilizer.c	/^void print_range_set(RangeSet *set) {$/;"	f
 range	src/seed_fertilizer.h	/^    Range range;$/;"	m	struct:__anon7
 range_end	src/seed_fertilizer.c	/^unsigned long range_end(Range range) {$/;"	f
 read_almanach	src/seed_fertilizer.c	/^void read_almanach(Almanach *dest, char *filename) {$/;"	f

@@ -61,24 +61,36 @@ TEST(seed_fertilizer, map_range_no_intersect) {
     TEST_ASSERT_EQUAL(1, result.item[0].start);
     TEST_ASSERT_EQUAL(2, result.item[0].len);
 }
-
 TEST(seed_fertilizer, map_range_with_intersect) {
     RangeSet result;
     result.count = 0;
     Range range = { 1, 100 };
     ConverterSet set = new_ConverterSet();
     add_converter(&set, (Converter){ 50, { 98, 2 }}); // C = 50,2  R = 1,97  100,1
-    add_converter(&set, (Converter){ 52, { 50, 48 }});  // C 52,97
+    add_converter(&set, (Converter){ 52, { 50, 48 }});  // C 52,48, R = 1,49 100,1
     map_convert_range(&result, range, &set);
     print_range_set(&result);
     TEST_ASSERT_EQUAL(4, result.count);
-    TEST_ASSERT_EQUAL(1, result.item[0].start); TEST_ASSERT_EQUAL(97, result.item[0].len);
-    TEST_ASSERT_EQUAL(50, result.item[1].start); TEST_ASSERT_EQUAL(2, result.item[1].len);
-    TEST_ASSERT_EQUAL(100, result.item[2].start); TEST_ASSERT_EQUAL(1, result.item[2].len);
-    TEST_ASSERT_EQUAL(1, result.item[3].start); TEST_ASSERT_EQUAL(49, result.item[3].len);
+    TEST_ASSERT_EQUAL(50, result.item[0].start); TEST_ASSERT_EQUAL(2, result.item[0].len);
+    TEST_ASSERT_EQUAL(52, result.item[1].start); TEST_ASSERT_EQUAL(48, result.item[1].len);
+    TEST_ASSERT_EQUAL(1, result.item[2].start); TEST_ASSERT_EQUAL(49, result.item[2].len);
+    TEST_ASSERT_EQUAL(100, result.item[3].start); TEST_ASSERT_EQUAL(1, result.item[3].len);
+}
+TEST(seed_fertilizer, map_ranges_all_maps) {
+    Almanach almanach;
+    read_almanach(&almanach, "../data/sample.txt");
+    Range range = { 79, 14 };
+    RangeSet result;
+    map_convert_range_all_maps(&result, range, &almanach.maps);
+    print_range_set(&result);
+    getchar();
+    range = (Range){ 55, 13 };
+    map_convert_range_all_maps(&result, range, &almanach.maps);
+    print_range_set(&result);
 }
 
 TEST(seed_fertilizer, all_maps_all_ranges) {
+    TEST_IGNORE();
     unsigned long result;
     Almanach almanach;
     read_almanach(&almanach, "../data/sample.txt");

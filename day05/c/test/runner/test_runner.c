@@ -6,5 +6,6 @@ TEST_GROUP_RUNNER(seed_fertilizer) {
     RUN_TEST_CASE(seed_fertilizer, convert_range_intersect);
     RUN_TEST_CASE(seed_fertilizer, map_range_no_intersect);
     RUN_TEST_CASE(seed_fertilizer, map_range_with_intersect);
+    RUN_TEST_CASE(seed_fertilizer, map_ranges_all_maps);
     RUN_TEST_CASE(seed_fertilizer, all_maps_all_ranges);
 }

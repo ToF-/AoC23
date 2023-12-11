@@ -45,6 +45,7 @@ void print_range(Range);
 void print_range_set(RangeSet *);
 void print_converter(Converter);
 void print_converter_set(ConverterSet *);
+void map_convert_range_all_maps(RangeSet *, Range, ConverterSet *);
 void all_maps_range(RangeSet *, Range, Almanach *);
 unsigned long minimum_all_maps_ranges(Almanach *);
 void append_ranges(RangeSet *, RangeSet *);
