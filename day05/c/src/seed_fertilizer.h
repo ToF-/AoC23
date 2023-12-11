@@ -38,7 +38,7 @@ ConverterSet new_ConverterSet();
 RangeSet new_RangeSet();
 void add_converter(ConverterSet *, Converter);
 void read_almanach(Almanach *, char *);
-void convert_range(RangeSet *, Range, Converter);
+void convert_range(RangeSet *, RangeSet *, Range, Converter);
 unsigned long range_end(Range);
 void map_convert_range(RangeSet *, Range, ConverterSet *);
 void print_range(Range);

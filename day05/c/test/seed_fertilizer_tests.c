@@ -21,26 +21,31 @@ TEST(seed_fertilizer, read_sample) {
 
 TEST(seed_fertilizer, convert_range_no_intersect) {
     RangeSet result;
+    RangeSet remaining;
     result.count = 0;
     Range range = { 79, 14 };
     Converter converter = { 50, { 98, 2 }};
-    convert_range(&result, range, converter);
+    convert_range(&result, &remaining, range, converter);
     TEST_ASSERT_EQUAL(0, result.count);
+    TEST_ASSERT_EQUAL(1, remaining.count);
 }
 
 TEST(seed_fertilizer, convert_range_intersect) {
     RangeSet result;
+    RangeSet remaining;
     result.count = 0;
+    remaining.count = 0;
     Range range = { 49, 64 };
     Converter converter = { 50, { 79, 14 }};
-    convert_range(&result, range, converter);
-    TEST_ASSERT_EQUAL(3, result.count);
-    TEST_ASSERT_EQUAL(49, result.item[0].start);
-    TEST_ASSERT_EQUAL(30, result.item[0].len);
-    TEST_ASSERT_EQUAL(50, result.item[1].start);
-    TEST_ASSERT_EQUAL(14, result.item[1].len);
-    TEST_ASSERT_EQUAL(93, result.item[2].start);
-    TEST_ASSERT_EQUAL(20, result.item[2].len);
+    convert_range(&result, &remaining, range, converter);
+    TEST_ASSERT_EQUAL(1, result.count);
+    TEST_ASSERT_EQUAL(50, result.item[0].start);
+    TEST_ASSERT_EQUAL(14, result.item[0].len);
+    TEST_ASSERT_EQUAL(2, remaining.count);
+    TEST_ASSERT_EQUAL(49, remaining.item[0].start);
+    TEST_ASSERT_EQUAL(30, remaining.item[0].len);
+    TEST_ASSERT_EQUAL(93, remaining.item[1].start);
+    TEST_ASSERT_EQUAL(20, remaining.item[1].len);
 }
 
 TEST(seed_fertilizer, map_range_no_intersect) {
@@ -59,18 +64,18 @@ TEST(seed_fertilizer, map_range_no_intersect) {
 
 TEST(seed_fertilizer, map_range_with_intersect) {
     RangeSet result;
+    result.count = 0;
     Range range = { 1, 100 };
     ConverterSet set = new_ConverterSet();
-    add_converter(&set, (Converter){ 50, { 98, 2 }}); // 1,97 50,2, 100,1
-    add_converter(&set, (Converter){ 52, { 50, 48 }}); 
+    add_converter(&set, (Converter){ 50, { 98, 2 }}); // C = 50,2  R = 1,97  100,1
+    add_converter(&set, (Converter){ 52, { 50, 48 }});  // C 52,97
     map_convert_range(&result, range, &set);
-    TEST_ASSERT_EQUAL(6, result.count);
+    print_range_set(&result);
+    TEST_ASSERT_EQUAL(4, result.count);
     TEST_ASSERT_EQUAL(1, result.item[0].start); TEST_ASSERT_EQUAL(97, result.item[0].len);
     TEST_ASSERT_EQUAL(50, result.item[1].start); TEST_ASSERT_EQUAL(2, result.item[1].len);
     TEST_ASSERT_EQUAL(100, result.item[2].start); TEST_ASSERT_EQUAL(1, result.item[2].len);
     TEST_ASSERT_EQUAL(1, result.item[3].start); TEST_ASSERT_EQUAL(49, result.item[3].len);
-    TEST_ASSERT_EQUAL(52, result.item[4].start); TEST_ASSERT_EQUAL(48, result.item[4].len);
-    TEST_ASSERT_EQUAL(98, result.item[5].start); TEST_ASSERT_EQUAL(3, result.item[5].len);
 }
 
 TEST(seed_fertilizer, all_maps_all_ranges) {
