@@ -7,7 +7,53 @@
 #include "seed_fertilizer.h"
 #define MIN(a,b) (a < b ? a : b)
 #define MAX(a,b) (a > b ? a : b)
-#define DEBUG
+#undef DEBUG
+
+Almanach *new_almanach() {
+    Almanach *almanach = (Almanach *)malloc(sizeof(Almanach));
+    almanach->values = (unsigned long *)malloc(sizeof(unsigned long)*MAXVALUES);
+    almanach->seedRanges = new_range_set();
+    almanach->maps = (ConverterSet *)malloc(sizeof(ConverterSet) * MAXMAPS);
+    for(int m=0; m < MAXMAPS; m++) {
+        almanach->maps[m].count = 0;
+        almanach->maps[m].items = (Converter *)malloc(sizeof(Converter)*MAXCONVERTERS);
+    }
+    return almanach;
+}
+
+void destroy_almanach(Almanach *almanach) {
+    free(almanach->values);
+    destroy_range_set(almanach->seedRanges);
+    for(int m=0; m < MAXMAPS; m++) {
+        free(almanach->maps[m].items);
+    }
+    free(almanach->maps);
+    free(almanach);
+}
+
+RangeSet *new_range_set() {
+    RangeSet *set = (RangeSet *)malloc(sizeof(RangeSet));
+    set->count = 0;
+    set->items = (Range *)malloc(sizeof(Range)*MAXRANGES);
+    return set;
+}
+
+void destroy_range_set(RangeSet *set) {
+    free(set->items);
+    free(set);
+}
+
+ConverterSet *new_converter_set() {
+    ConverterSet *set = (ConverterSet *)malloc(sizeof(ConverterSet));
+    set->count = 0;
+    set->items = (Converter *)malloc(sizeof(Converter)*MAXCONVERTERS);
+    return set;
+}
+
+void destroy_converter_set(ConverterSet *set) {
+    free(set->items);
+    free(set);
+}
 
 int scan_int(unsigned long *, int, char *);
 int scan_values(unsigned long *, char *);
@@ -47,7 +93,7 @@ Converter scan_converter(char *line) {
 
 bool has_range(RangeSet *set, Range range) {
     for(int i=0; i<set->count; i++) {
-        Range r = set->item[i];
+        Range r = set->items[i];
         if(r.start == range.start && r.len == range.len)
             return true;
     }
@@ -58,29 +104,20 @@ void add_range(RangeSet *set, Range range) {
         return;
 
     assert(set->count < MAXRANGES);
-    set->item[set->count++] = range;
+    set->items[set->count++] = range;
 }
 
 unsigned long range_end(Range range) {
     return range.start + range.len - 1;
 }
 
-ConverterSet new_ConverterSet() {
-    ConverterSet result;
-    result.count = 0;
-    return result;
-}
-
-RangeSet new_RangeSet() {
-    RangeSet result;
-    result.count = 0;
-    return result;
-}
 void add_converter(ConverterSet *set, Converter converter) {
-    set->item[set->count++] = converter;
+    assert(set);
+    assert(set->count < MAXCONVERTERS);
+    set->items[set->count++] = converter;
 }
 
-void read_almanach(Almanach *dest, char *filename) {
+void read_almanach(Almanach *almanach, char *filename) {
     char **lines;
     char line[MAXLINE];
     int lineCount = 0;
@@ -117,24 +154,27 @@ void read_almanach(Almanach *dest, char *filename) {
     strcpy(lines[lineCount],"");
     lineCount++;
     fclose(file);
-    dest->valueCount = scan_values(dest->values, lines[0]);
-    for(int i=0; i<dest->valueCount; i++) {
+    almanach->valueCount = scan_values(almanach->values, lines[0]);
+    for(int i=0; i<almanach->valueCount; i++) {
         if(i%2) {
             Range range;
-            range.start = dest->values[i-1];
-            range.len = dest->values[i];
-            add_range(&dest->seedRanges, range);
+            range.start = almanach->values[i-1];
+            range.len = almanach->values[i];
+            add_range(almanach->seedRanges, range);
         }
     }
     int mapCount = 0;
     for(int i=1; i<lineCount; i++) {
         char *line = lines[i];
-        if(strlen(line) == 0 && i > 2) {
-            mapCount++;
+        printf("line #%d : %s\n", i, line);
+        if(strlen(line) == 0) {
+            if (i > 2) {
+                mapCount++;
+            }
         } else if(strchr(line, ':')) {
-            dest->maps[mapCount].count = 0;
+            almanach->maps[mapCount].count = 0;
         } else {
-            ConverterSet *set = &dest->maps[mapCount];
+            ConverterSet *set = &almanach->maps[mapCount];
             add_converter(set, scan_converter(line));
         }
     }
@@ -196,11 +236,12 @@ void map_convert_ranges_all_map_level(RangeSet *result, RangeSet *current, int l
         return;
     }
     ConverterSet converters = almanach->maps[level];
+    printf("%lu\n", sizeof(RangeSet));
     RangeSet *work = (RangeSet *)malloc(sizeof(RangeSet));
     RangeSet *temp = (RangeSet *)malloc(sizeof(RangeSet));
     copy_ranges(work, current);
     for(int r=0; r<work->count; r++) {
-        Range range = work->item[r];
+        Range range = work->items[r];
         map_convert_range(temp, range, &converters);
         map_convert_ranges_all_map_level(result, temp, level+1, almanach);
     }
@@ -211,33 +252,30 @@ void map_convert_ranges_all_map_level(RangeSet *result, RangeSet *current, int l
 // being processed with the next converter in the set
 // all remaining ranges after the next converter is processed are added to the result
 void map_convert_range(RangeSet *result, Range range, ConverterSet *converters) {
-    RangeSet *remaining = (RangeSet *)malloc(sizeof(RangeSet));
-    RangeSet *work =      (RangeSet *)malloc(sizeof(RangeSet));
-    empty_ranges(remaining);
+    RangeSet *remaining = new_range_set();
+    RangeSet *work =      new_range_set();
     empty_ranges(result);
-    empty_ranges(work);
     add_range(work, range);
     for(int c=0; c<converters->count; c++) {
 #ifdef DEBUG
         printf("ranges to convert\n"); print_ranges(work);
-        printf("current converter:\t"); print_converter(converters->item[c]); printf("\n");
+        printf("current converter:\t"); print_converter(converters->items[c]); printf("\n");
 #endif
         for(int w=0; w<work->count; w++) {
-            convert_range(result, remaining, work->item[w], converters->item[c]);
+            convert_range(result, remaining, work->items[w], converters->items[c]);
         }
         copy_ranges(work, remaining);
         empty_ranges(remaining);
     }
     append_ranges(result, work);
-    free(remaining);
-    free(work);
+    destroy_range_set(remaining);
+    destroy_range_set(work);
 }
 
 // convert a range through all 7 sets of converters
 void map_convert_range_all_maps(RangeSet *result, Range range, ConverterSet *maps) {
-    RangeSet *work = (RangeSet *)malloc(sizeof(RangeSet));
-    RangeSet *temp = (RangeSet *)malloc(sizeof(RangeSet));
-    empty_ranges(work);
+    RangeSet *work = new_range_set();
+    RangeSet *temp = new_range_set();
     add_range(work, range);
     for(int m = 0; m < 7; m++) {
 #ifdef DEBUG
@@ -246,7 +284,7 @@ void map_convert_range_all_maps(RangeSet *result, Range range, ConverterSet *map
         ConverterSet converters = maps[m];
         empty_ranges(temp);
         for(int r = 0; r < work->count; r++) {
-            map_convert_range(temp, work->item[r], &converters);
+            map_convert_range(temp, work->items[r], &converters);
 #ifdef DEBUG
         printf("------------------ map#%d done with result:\n", m);
         print_ranges(temp);
@@ -256,6 +294,8 @@ void map_convert_range_all_maps(RangeSet *result, Range range, ConverterSet *map
         }
     }
     copy_ranges(result, work);
+    destroy_range_set(work);
+    destroy_range_set(temp);
 }
 
 void print_range(Range range) {
@@ -272,18 +312,21 @@ void print_converter(Converter converter) {
 }
 
 void all_maps_range(RangeSet *result, Range range, Almanach *almanach) {
-    RangeSet source= new_RangeSet();
-    add_range(&source, range);
+    RangeSet *source= new_range_set();
+    RangeSet *dest = new_range_set(); 
+    add_range(source, range);
     for(int i = 0; i < 7; i++) {
         ConverterSet converters = almanach->maps[i];
-        RangeSet dest = new_RangeSet();
-        for(int j=0; j<source.count; j++) {
-            map_convert_range(&dest, source.item[j], &converters);
+        empty_ranges(dest);
+        for(int j=0; j<source->count; j++) {
+            map_convert_range(dest, source->items[j], &converters);
         }
-        copy_ranges(&source, &dest);
+        copy_ranges(source, dest);
     }
     result->count = 0;
-    append_ranges(result, &source);
+    append_ranges(result, source);
+    destroy_range_set(source);
+    destroy_range_set(dest);
 }
 
 void empty_ranges(RangeSet *dest) {
@@ -292,7 +335,7 @@ void empty_ranges(RangeSet *dest) {
 
 void append_ranges(RangeSet *dest, RangeSet *srce) {
     for(int i = 0; i < srce->count; i++) {
-        add_range(dest, srce->item[i]);
+        add_range(dest, srce->items[i]);
     }
 }
 
@@ -305,10 +348,10 @@ unsigned long minimum_all_maps_ranges(Almanach *almanach) {
     unsigned long min = ULONG_MAX;
     RangeSet *source = (RangeSet *)malloc(sizeof(RangeSet));
     RangeSet *work= (RangeSet *)malloc(sizeof(RangeSet));
-    for(int i = 0; i < almanach->seedRanges.count; i++) {
-        printf("seed range %d:",i); print_range(almanach->seedRanges.item[i]); printf("\n");
+    for(int i = 0; i < almanach->seedRanges->count; i++) {
+        printf("seed range %d:",i); print_range(almanach->seedRanges->items[i]); printf("\n");
         source->count = 0;
-        add_range(source, almanach->seedRanges.item[i]);
+        add_range(source, almanach->seedRanges->items[i]);
         for(int j = 0; j < MAXMAPS; j++) {
             printf("map %d\n",j); print_ranges(source); printf("\n");
             ConverterSet converters = almanach->maps[j];
@@ -316,7 +359,7 @@ unsigned long minimum_all_maps_ranges(Almanach *almanach) {
             print_converter_set(&converters);
             work->count = 0;
             for(int k = 0; k < source->count; k++) {
-                Range range = source->item[k];
+                Range range = source->items[k];
                 map_convert_range(work, range, &converters);
             }
             source->count = 0;
@@ -333,21 +376,21 @@ unsigned long minimum_all_maps_ranges(Almanach *almanach) {
 unsigned long minimum(RangeSet *ranges) {
     unsigned long min = ULONG_MAX;
     for(int i=0; i < ranges->count; i++) {
-        min = MIN(ranges->item[i].start, min);
+        min = MIN(ranges->items[i].start, min);
     }
     return min;
 }
 
 void print_ranges(RangeSet *set) {
     for(int i = 0; i < set->count; i++) {
-        print_range(set->item[i]);
+        print_range(set->items[i]);
     }
     printf("\n");
 }
 
 void print_converter_set(ConverterSet *set) {
     for(int i = 0; i < set->count; i++) {
-        print_converter(set->item[i]);
+        print_converter(set->items[i]);
     }
     printf("\n");
 }

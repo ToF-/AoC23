@@ -3,7 +3,7 @@
 #define MAXVALUES 30
 #define MAXMAPS 7
 #define MAXCONVERTERS 100
-#define MAXRANGES 1000
+#define MAXRANGES 2500
 
 typedef struct {
     unsigned long start;
@@ -12,7 +12,7 @@ typedef struct {
 
 typedef struct {
     int count;
-    Range item[MAXRANGES];
+    Range *items;
 } RangeSet;
 
 typedef struct {
@@ -22,15 +22,26 @@ typedef struct {
 
 typedef struct {
     int count;
-    Converter item[MAXCONVERTERS];
+    Converter *items;
 } ConverterSet;
 
 typedef struct {
-    unsigned long values[MAXVALUES];
+    unsigned long *values;
     int valueCount;
-    RangeSet seedRanges;
-    ConverterSet maps[MAXMAPS];
+    RangeSet *seedRanges;
+    ConverterSet *maps;
 } Almanach;
+
+
+Almanach *new_almanach();
+void destroy_almanach(Almanach *);
+
+RangeSet *new_range_set();
+void destroy_range_set(RangeSet *);
+
+ConverterSet *new_converter_set();
+void destroy_converter_set(ConverterSet *);
+
 
 bool has_range(RangeSet *, Range);
 void add_range(RangeSet *, Range);
