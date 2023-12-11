@@ -7,7 +7,7 @@
 #include "seed_fertilizer.h"
 #define MIN(a,b) (a < b ? a : b)
 #define MAX(a,b) (a > b ? a : b)
-#undef DEBUG
+#define DEBUG
 
 Almanach *new_almanach() {
     Almanach *almanach = (Almanach *)malloc(sizeof(Almanach));
@@ -18,6 +18,7 @@ Almanach *new_almanach() {
         almanach->maps[m].count = 0;
         almanach->maps[m].items = (Converter *)malloc(sizeof(Converter)*MAXCONVERTERS);
     }
+    almanach->minimumSeed = ULONG_MAX;
     return almanach;
 }
 
@@ -166,7 +167,6 @@ void read_almanach(Almanach *almanach, char *filename) {
     int mapCount = 0;
     for(int i=1; i<lineCount; i++) {
         char *line = lines[i];
-        printf("line #%d : %s\n", i, line);
         if(strlen(line) == 0) {
             if (i > 2) {
                 mapCount++;
@@ -224,29 +224,30 @@ void convert_range(RangeSet *converted, RangeSet *remaining, Range range, Conver
 // convert first range through first converter 
 // if conversion -> call 
 
-void map_convert_ranges_all_map_level(RangeSet *result, RangeSet *current, int level, Almanach *almanach) {
+void map_convert_ranges_all_map_level(RangeSet *current, int level, Almanach *almanach) {
 #ifdef DEBUG
     printf("level:%d\n",level);
     printf("current:\n");
     print_ranges(current);
-    printf("result size:%d\n", result->count);
 #endif
     if(level >= MAXMAPS) {
-        append_ranges(result, current);
+        almanach->minimumSeed = MIN(almanach->minimumSeed, minimum(current));
+        printf("minimumSeed:%lu\n", almanach->minimumSeed);
+        getchar();
         return;
     }
     ConverterSet converters = almanach->maps[level];
     printf("%lu\n", sizeof(RangeSet));
-    RangeSet *work = (RangeSet *)malloc(sizeof(RangeSet));
-    RangeSet *temp = (RangeSet *)malloc(sizeof(RangeSet));
+    RangeSet *work = new_range_set();
+    RangeSet *temp = new_range_set();
     copy_ranges(work, current);
     for(int r=0; r<work->count; r++) {
         Range range = work->items[r];
         map_convert_range(temp, range, &converters);
-        map_convert_ranges_all_map_level(result, temp, level+1, almanach);
+        map_convert_ranges_all_map_level(temp, level+1, almanach);
     }
-    free(temp);
-    free(work);
+    destroy_range_set(work);
+    destroy_range_set(temp);
 }
 // convert a range through a set of converter, each remaining range from a conversion
 // being processed with the next converter in the set

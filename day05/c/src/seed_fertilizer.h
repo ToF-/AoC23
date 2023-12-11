@@ -26,6 +26,7 @@ typedef struct {
 } ConverterSet;
 
 typedef struct {
+    unsigned long minimumSeed;
     unsigned long *values;
     int valueCount;
     RangeSet *seedRanges;
@@ -63,4 +64,4 @@ void append_ranges(RangeSet *, RangeSet *);
 void copy_ranges(RangeSet *, RangeSet *);
 void empty_ranges(RangeSet *);
 unsigned long minimum(RangeSet *);
-void map_convert_ranges_all_map_level(RangeSet *, RangeSet *, int, Almanach *);
+void map_convert_ranges_all_map_level(RangeSet *, int, Almanach *);

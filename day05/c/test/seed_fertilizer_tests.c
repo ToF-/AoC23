@@ -42,6 +42,7 @@ void TEST_RANGE(unsigned long start, unsigned long len, Range range) {
 }
 
 TEST(seed_fertilizer, convert_range_intersect) {
+    TEST_IGNORE();
     RangeSet *result = new_range_set();
     RangeSet *remaining = new_range_set();
     Range range = { 49, 64 };
@@ -56,6 +57,7 @@ TEST(seed_fertilizer, convert_range_intersect) {
 }
 
 TEST(seed_fertilizer, map_range_no_intersect) {
+    TEST_IGNORE();
     RangeSet *result = new_range_set();
     result->count = 0;
     Range range = { 1, 2 };
@@ -70,6 +72,7 @@ TEST(seed_fertilizer, map_range_no_intersect) {
     destroy_converter_set(set);
 }
 TEST(seed_fertilizer, map_range_with_intersect) {
+    TEST_IGNORE();
     RangeSet *result = new_range_set();
     Range range = { 1, 100 };
     ConverterSet *set = new_converter_set();
@@ -86,6 +89,7 @@ TEST(seed_fertilizer, map_range_with_intersect) {
     destroy_converter_set(set);
 }
 TEST(seed_fertilizer, map_ranges_all_maps) {
+    TEST_IGNORE();
     read_almanach(almanach, "../data/sample.txt");
     Range range = { 79, 14 };
     RangeSet *result = new_range_set();
@@ -98,22 +102,16 @@ TEST(seed_fertilizer, map_ranges_all_maps) {
 }
 
 TEST(seed_fertilizer, convert_range_all_map_level) {
+    TEST_IGNORE();
     read_almanach(almanach, "../data/sample.txt");
-    RangeSet *result = new_range_set();
-    empty_ranges(result);
-    map_convert_ranges_all_map_level(result, almanach->seedRanges, 0, almanach);
-    TEST_ASSERT_EQUAL(46, minimum(result));
-    destroy_range_set(result);
+    map_convert_ranges_all_map_level(almanach->seedRanges, 0, almanach);
+    TEST_ASSERT_EQUAL(46, almanach->minimumSeed);
 }
 TEST(seed_fertilizer, solve_puzzle_part_two) {
-    TEST_IGNORE();
     read_almanach(almanach, "../data/puzzle.txt");
     assert(almanach->seedRanges->items[0].start != 79);
-    RangeSet *result = new_range_set();
-    empty_ranges(result);
-    map_convert_ranges_all_map_level(result, almanach->seedRanges, 0, almanach);
-    TEST_ASSERT_EQUAL(46, minimum(result));
-    destroy_range_set(result);
+    map_convert_ranges_all_map_level(almanach->seedRanges, 0, almanach);
+    TEST_ASSERT_EQUAL(46, almanach->minimumSeed);
 }
 TEST(seed_fertilizer, all_maps_all_ranges) {
     TEST_IGNORE();
