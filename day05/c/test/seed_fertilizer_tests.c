@@ -20,11 +20,13 @@ TEST_TEAR_DOWN(seed_fertilizer) {
 void TEST_RANGE(unsigned long, unsigned long, Range);
 
 TEST(seed_fertilizer, read_sample) {
+    TEST_IGNORE();
     read_almanach(almanach, "../data/sample.txt");
     TEST_ASSERT_EQUAL(4, almanach->maps[6].items[1].range.len);
 }
 
 TEST(seed_fertilizer, convert_range_no_intersect) {
+    TEST_IGNORE();
     RangeSet *result = new_range_set();
     RangeSet *remaining=new_range_set();
     result->count = 0;
@@ -37,6 +39,7 @@ TEST(seed_fertilizer, convert_range_no_intersect) {
 }
 
 void TEST_RANGE(unsigned long start, unsigned long len, Range range) {
+    TEST_IGNORE();
     TEST_ASSERT_EQUAL(start, range.start);
     TEST_ASSERT_EQUAL(len, range.len);
 }

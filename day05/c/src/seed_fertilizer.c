@@ -233,11 +233,12 @@ void map_convert_ranges_all_map_level(RangeSet *current, int level, Almanach *al
     if(level >= MAXMAPS) {
         almanach->minimumSeed = MIN(almanach->minimumSeed, minimum(current));
         printf("minimumSeed:%lu\n", almanach->minimumSeed);
-        getchar();
         return;
     }
     ConverterSet converters = almanach->maps[level];
+#ifdef DEBUG
     printf("%lu\n", sizeof(RangeSet));
+#endif
     RangeSet *work = new_range_set();
     RangeSet *temp = new_range_set();
     copy_ranges(work, current);
@@ -248,6 +249,9 @@ void map_convert_ranges_all_map_level(RangeSet *current, int level, Almanach *al
     }
     destroy_range_set(work);
     destroy_range_set(temp);
+#ifdef DEBUG
+    printf("released\n");
+#endif
 }
 // convert a range through a set of converter, each remaining range from a conversion
 // being processed with the next converter in the set
