@@ -89,18 +89,17 @@ TEST(seed_fertilizer, map_range_with_intersect) {
 TEST(seed_fertilizer, map_ranges) {
     RangeSet *result = new_range_set();
     RangeSet *ranges = new_range_set();
-    Range range = { 1, 100 };
-    add_range(ranges, range);
-    Map map = almanach->maps[0];
-    map_ranges(result, ranges, &map);
-    print_converter_set(&map);
-    print_ranges(result);
-    copy_ranges(ranges, result);
-    map = almanach->maps[1];
-    print_ranges(ranges);
-    print_converter_set(&map);
-    map_ranges(result, ranges, &map);
-    print_ranges(result);
+    add_range(ranges, (Range) { 79, 14 });
+    add_range(ranges, (Range) { 55, 13 });
+    Map map;
+    for(int m=0; m<MAXMAPS; m++) {
+        map = almanach->maps[m];
+        map_ranges(result, ranges, &map);
+        print_converter_set(&map);
+        print_ranges(result);
+        getchar();
+        copy_ranges(ranges, result);
+    }
     destroy_range_set(result);
     destroy_range_set(ranges);
 }
