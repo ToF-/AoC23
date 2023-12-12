@@ -20,7 +20,6 @@ CLEANUP	Makefile	/^CLEANUP = rm -f$/;"	m
 C_COMPILER	Makefile	/^C_COMPILER=clang$/;"	m
 C_COMPILER	Makefile	/^C_COMPILER=gcc$/;"	m
 Converter	src/seed_fertilizer.h	/^} Converter;$/;"	t	typeref:struct:__anon7
-ConverterSet	src/seed_fertilizer.h	/^} ConverterSet;$/;"	t	typeref:struct:__anon8
 CurrentDetail1	unity/src/unity_internals.h	/^    const char* CurrentDetail1;$/;"	m	struct:UNITY_STORAGE_T
 CurrentDetail2	unity/src/unity_internals.h	/^    const char* CurrentDetail2;$/;"	m	struct:UNITY_STORAGE_T
 CurrentTestFailed	unity/src/unity_internals.h	/^    UNITY_COUNTER_TYPE CurrentTestFailed;$/;"	m	struct:UNITY_STORAGE_T
@@ -54,6 +53,7 @@ MAXMAPS	src/seed_fertilizer.h	/^#define MAXMAPS /;"	d
 MAXRANGES	src/seed_fertilizer.h	/^#define MAXRANGES /;"	d
 MAXVALUES	src/seed_fertilizer.h	/^#define MAXVALUES /;"	d
 MIN	src/seed_fertilizer.c	/^#define MIN(/;"	d	file:
+Map	src/seed_fertilizer.h	/^} Map;$/;"	t	typeref:struct:__anon8
 NameFilter	unity/extras/fixture/src/unity_fixture_internals.h	/^    const char* NameFilter;$/;"	m	struct:UNITY_FIXTURE_T
 NumberOfTests	unity/src/unity_internals.h	/^    UNITY_COUNTER_TYPE NumberOfTests;$/;"	m	struct:UNITY_STORAGE_T
 PROGMEM	unity/src/unity.c	/^#define PROGMEM$/;"	d	file:
@@ -562,7 +562,6 @@ TEST_PASS	unity/src/unity.h	/^#define TEST_PASS(/;"	d
 TEST_PASS_MESSAGE	unity/src/unity.h	/^#define TEST_PASS_MESSAGE(/;"	d
 TEST_PRINTF	unity/src/unity.h	/^#define TEST_PRINTF(/;"	d
 TEST_PROTECT	unity/src/unity_internals.h	/^#define TEST_PROTECT(/;"	d
-TEST_RANGE	test/seed_fertilizer_tests.c	/^void TEST_RANGE(unsigned long start, unsigned long len, Range range) {$/;"	f
 TEST_SETUP	test/seed_fertilizer_tests.c	/^TEST_SETUP(seed_fertilizer) {$/;"	f
 TEST_SETUP	unity/extras/fixture/src/unity_fixture.h	/^#define TEST_SETUP(/;"	d
 TEST_SETUP	unity/extras/fixture/test/template_fixture_tests.c	/^TEST_SETUP(mygroup)$/;"	f
@@ -1032,7 +1031,7 @@ UnityTestRunner	unity/extras/fixture/src/unity_fixture.c	/^void UnityTestRunner(
 UnityVerbosity	unity/src/unity.c	/^int UnityVerbosity            = 1;$/;"	v
 VAL_UnityOutputCharSpy_OutputChar	unity/extras/memory/test/unity_memory_Test.c	/^#define VAL_UnityOutputCharSpy_OutputChar /;"	d	file:
 Verbose	unity/extras/fixture/src/unity_fixture_internals.h	/^    int Verbose;$/;"	m	struct:UNITY_FIXTURE_T
-add_converter	src/seed_fertilizer.c	/^void add_converter(ConverterSet *set, Converter converter) {$/;"	f
+add_converter	src/seed_fertilizer.c	/^void add_converter(Map *map, Converter converter) {$/;"	f
 add_range	src/seed_fertilizer.c	/^void add_range(RangeSet *set, Range range) {$/;"	f
 all_maps_range	src/seed_fertilizer.c	/^void all_maps_range(RangeSet *result, Range range, Almanach *almanach) {$/;"	f
 almanach	test/seed_fertilizer_tests.c	/^Almanach *almanach;$/;"	v
@@ -1041,7 +1040,9 @@ append_ranges	src/seed_fertilizer.c	/^void append_ranges(RangeSet *dest, RangeSe
 buffer	unity/extras/memory/test/unity_output_Spy.c	/^static char* buffer;$/;"	v	file:
 calloc	unity/extras/memory/src/unity_memory.c	/^#undef calloc$/;"	d	file:
 calloc	unity/extras/memory/src/unity_memory.h	/^#define calloc /;"	d
+check_range	test/seed_fertilizer_tests.c	/^void check_range(unsigned long start, unsigned long len, Range range) {$/;"	f
 convert_range	src/seed_fertilizer.c	/^void convert_range(RangeSet *converted, RangeSet *remaining, Range range, Converter converter) {$/;"	f
+converters	src/seed_fertilizer.h	/^    Converter converters[MAXCONVERTERS];$/;"	m	struct:__anon8
 copy_ranges	src/seed_fertilizer.c	/^void copy_ranges(RangeSet *dest, RangeSet *srce) {$/;"	f
 count	src/seed_fertilizer.h	/^    int count;$/;"	m	struct:__anon6
 count	src/seed_fertilizer.h	/^    int count;$/;"	m	struct:__anon8
@@ -1051,7 +1052,6 @@ dashRNotLast	unity/extras/fixture/test/unity_fixture_Test.c	/^static const char*
 data	unity/extras/fixture/test/template_fixture_tests.c	/^static int data = -1;$/;"	v	file:
 dest	src/seed_fertilizer.h	/^    unsigned long dest;$/;"	m	struct:__anon7
 destroy_almanach	src/seed_fertilizer.c	/^void destroy_almanach(Almanach *almanach) {$/;"	f
-destroy_converter_set	src/seed_fertilizer.c	/^void destroy_converter_set(ConverterSet *set) {$/;"	f
 destroy_range_set	src/seed_fertilizer.c	/^void destroy_range_set(RangeSet *set) {$/;"	f
 empty_ranges	src/seed_fertilizer.c	/^void empty_ranges(RangeSet *dest) {$/;"	f
 end	unity/extras/memory/src/unity_memory.c	/^static const char end[] = "END";$/;"	v	file:
@@ -1074,7 +1074,6 @@ int4	unity/extras/fixture/test/unity_fixture_Test.c	/^static int int4;$/;"	v	fil
 isOverrun	unity/extras/memory/src/unity_memory.c	/^static int isOverrun(void* mem)$/;"	f	file:
 isinf	unity/src/unity_internals.h	/^#define isinf(/;"	d
 isnan	unity/src/unity_internals.h	/^#define isnan(/;"	d
-items	src/seed_fertilizer.h	/^    Converter *items;$/;"	m	struct:__anon8
 items	src/seed_fertilizer.h	/^    Range *items;$/;"	m	struct:__anon6
 len	src/seed_fertilizer.h	/^    unsigned long len;$/;"	m	struct:__anon5
 main	src/main.c	/^int main(int argc, char *argv[]) {$/;"	f
@@ -1085,10 +1084,10 @@ malloc	unity/extras/memory/src/unity_memory.c	/^#undef malloc$/;"	d	file:
 malloc	unity/extras/memory/src/unity_memory.h	/^#define malloc /;"	d
 malloc_count	unity/extras/memory/src/unity_memory.c	/^static int malloc_count;$/;"	v	file:
 malloc_fail_countdown	unity/extras/memory/src/unity_memory.c	/^static int malloc_fail_countdown = MALLOC_DONT_FAIL;$/;"	v	file:
-map_convert_range	src/seed_fertilizer.c	/^void map_convert_range(RangeSet *result, Range range, ConverterSet *converters) {$/;"	f
-map_convert_range_all_maps	src/seed_fertilizer.c	/^void map_convert_range_all_maps(RangeSet *result, Range range, ConverterSet *maps) {$/;"	f
+map_convert_range_all_maps	src/seed_fertilizer.c	/^void map_convert_range_all_maps(RangeSet *result, Range range, Map *maps) {$/;"	f
 map_convert_ranges_all_map_level	src/seed_fertilizer.c	/^void map_convert_ranges_all_map_level(RangeSet *current, int level, Almanach *almanach) {$/;"	f
-maps	src/seed_fertilizer.h	/^    ConverterSet *maps;$/;"	m	struct:__anon9
+map_range	src/seed_fertilizer.c	/^void map_range(RangeSet *result, Range range, Map *map) {$/;"	f
+maps	src/seed_fertilizer.h	/^    Map maps[MAXMAPS];$/;"	m	struct:__anon9
 minimum	src/seed_fertilizer.c	/^unsigned long minimum(RangeSet *ranges) {$/;"	f
 minimumSeed	src/seed_fertilizer.h	/^    unsigned long minimumSeed;$/;"	m	struct:__anon9
 minimum_all_maps_ranges	src/seed_fertilizer.c	/^unsigned long minimum_all_maps_ranges(Almanach *almanach) {$/;"	f
@@ -1096,7 +1095,6 @@ multiple	unity/extras/fixture/test/unity_fixture_Test.c	/^static const char* mul
 mygroup	unity/extras/fixture/test/template_fixture_tests.c	/^TEST_GROUP(mygroup);$/;"	v
 name	unity/extras/fixture/test/unity_fixture_Test.c	/^static const char* name[] = {$/;"	v	file:
 new_almanach	src/seed_fertilizer.c	/^Almanach *new_almanach() {$/;"	f
-new_converter_set	src/seed_fertilizer.c	/^ConverterSet *new_converter_set() {$/;"	f
 new_range_set	src/seed_fertilizer.c	/^RangeSet *new_range_set() {$/;"	f
 noOptions	unity/extras/fixture/test/unity_fixture_Test.c	/^static const char* noOptions[] = {$/;"	v	file:
 noreturn	unity/src/unity_internals.h	/^void UnityFail(const char* message, const UNITY_LINE_TYPE line) UNITY_FUNCTION_ATTR(noreturn);$/;"	v
@@ -1110,8 +1108,9 @@ pointer2	unity/extras/fixture/test/unity_fixture_Test.c	/^static int* pointer2 =
 pointer3	unity/extras/fixture/test/unity_fixture_Test.c	/^static int* pointer3 = (int*)3;$/;"	v	file:
 pointer_index	unity/extras/fixture/src/unity_fixture.c	/^static int pointer_index = 0;$/;"	v	file:
 pointer_store	unity/extras/fixture/src/unity_fixture.c	/^static struct PointerPair pointer_store[UNITY_MAX_POINTERS];$/;"	v	typeref:struct:PointerPair	file:
+pop_range	src/seed_fertilizer.c	/^bool pop_range(Range *range, RangeSet *set) {$/;"	f
 print_converter	src/seed_fertilizer.c	/^void print_converter(Converter converter) {$/;"	f
-print_converter_set	src/seed_fertilizer.c	/^void print_converter_set(ConverterSet *set) {$/;"	f
+print_converter_set	src/seed_fertilizer.c	/^void print_converter_set(Map *map) {$/;"	f
 print_range	src/seed_fertilizer.c	/^void print_range(Range range) {$/;"	f
 print_ranges	src/seed_fertilizer.c	/^void print_ranges(RangeSet *set) {$/;"	f
 range	src/seed_fertilizer.h	/^    Range range;$/;"	m	struct:__anon7

@@ -22,15 +22,15 @@ typedef struct {
 
 typedef struct {
     int count;
-    Converter *items;
-} ConverterSet;
+    Converter converters[MAXCONVERTERS];
+} Map;
 
 typedef struct {
     unsigned long minimumSeed;
     unsigned long *values;
     int valueCount;
     RangeSet *seedRanges;
-    ConverterSet *maps;
+    Map maps[MAXMAPS];
 } Almanach;
 
 
@@ -40,24 +40,21 @@ void destroy_almanach(Almanach *);
 RangeSet *new_range_set();
 void destroy_range_set(RangeSet *);
 
-ConverterSet *new_converter_set();
-void destroy_converter_set(ConverterSet *);
-
-
 bool has_range(RangeSet *, Range);
 void add_range(RangeSet *, Range);
-ConverterSet new_ConverterSet();
+bool pop_range(Range *, RangeSet *);
 RangeSet new_RangeSet();
-void add_converter(ConverterSet *, Converter);
+void add_converter(Map *, Converter);
 void read_almanach(Almanach *, char *);
 void convert_range(RangeSet *, RangeSet *, Range, Converter);
 unsigned long range_end(Range);
-void map_convert_range(RangeSet *, Range, ConverterSet *);
+void map_range(RangeSet *, Range, Map *);
+void map_ranges(RangeSet *, RangeSet *, Map *);
 void print_range(Range);
 void print_ranges(RangeSet *);
 void print_converter(Converter);
-void print_converter_set(ConverterSet *);
-void map_convert_range_all_maps(RangeSet *, Range, ConverterSet *);
+void print_converter_set(Map *);
+void map_convert_range_all_maps(RangeSet *, Range, Map *);
 void all_maps_range(RangeSet *, Range, Almanach *);
 unsigned long minimum_all_maps_ranges(Almanach *);
 void append_ranges(RangeSet *, RangeSet *);
