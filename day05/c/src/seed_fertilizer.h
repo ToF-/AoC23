@@ -1,5 +1,5 @@
 #include <stdbool.h>
-#define MAXLINE 100
+#define MAXLINE 1000
 #define MAXVALUES 30
 #define MAXMAPS 7
 #define MAXCONVERTERS 100

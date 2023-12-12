@@ -118,8 +118,9 @@ TEST(seed_fertilizer, mimimun_range) {
 }
 TEST(seed_fertilizer, solve_puzzle_part_two) {
     read_almanach(almanach, "../data/puzzle.txt");
+    TEST_ASSERT_EQUAL(20, almanach->valueCount);
     unsigned long result = minimum_range_start(almanach);
-    TEST_ASSERT_EQUAL(0, result);
+    TEST_ASSERT_EQUAL(100165128, result);
 }
 
 
