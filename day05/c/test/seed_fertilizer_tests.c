@@ -57,6 +57,7 @@ TEST(seed_fertilizer, convert_range_intersect) {
 }
 
 TEST(seed_fertilizer, map_range_no_intersect) {
+    read_almanach(almanach, "../data/sample.txt");
     RangeSet *result = new_range_set();
     result->count = 0;
     Range range = { 1, 2 };
@@ -70,6 +71,7 @@ TEST(seed_fertilizer, map_range_no_intersect) {
     destroy_range_set(result);
 }
 TEST(seed_fertilizer, map_range_with_intersect) {
+    read_almanach(almanach, "../data/sample.txt");
     RangeSet *result = new_range_set();
     Range range = { 1, 100 };
     Map map = almanach->maps[0];
@@ -87,6 +89,7 @@ TEST(seed_fertilizer, map_range_with_intersect) {
     destroy_range_set(result);
 }
 TEST(seed_fertilizer, map_ranges) {
+    read_almanach(almanach, "../data/sample.txt");
     RangeSet *result = new_range_set();
     RangeSet *ranges = new_range_set();
     add_range(ranges, (Range) { 79, 14 });
@@ -95,45 +98,28 @@ TEST(seed_fertilizer, map_ranges) {
     for(int m=0; m<MAXMAPS; m++) {
         map = almanach->maps[m];
         map_ranges(result, ranges, &map);
-        print_converter_set(&map);
-        print_ranges(result);
-        getchar();
         copy_ranges(ranges, result);
     }
+    TEST_ASSERT_EQUAL(6, result->count);
+    check_range(46, 11, result->items[0]);
+    check_range(82, 3, result->items[1]);
+    check_range(86, 4, result->items[2]);
+    check_range(94, 3, result->items[3]);
+    check_range(56, 4, result->items[4]);
+    check_range(97, 2, result->items[5]);
+    TEST_ASSERT_EQUAL(46, minimum_start(result));
     destroy_range_set(result);
     destroy_range_set(ranges);
 }
-TEST(seed_fertilizer, map_ranges_all_maps) {
-    TEST_IGNORE();
+TEST(seed_fertilizer, mimimun_range) {
     read_almanach(almanach, "../data/sample.txt");
-    Range range = { 79, 14 };
-    RangeSet *result = new_range_set();
-    map_convert_range_all_maps(result, range, &almanach->maps[0]);
-    print_ranges(result);
-    range = (Range){ 55, 13 };
-    map_convert_range_all_maps(result, range, &almanach->maps[0]);
-    print_ranges(result);
-    destroy_range_set(result);
-}
-
-TEST(seed_fertilizer, convert_range_all_map_level) {
-    TEST_IGNORE();
-    read_almanach(almanach, "../data/sample.txt");
-    map_convert_ranges_all_map_level(almanach->seedRanges, 0, almanach);
-    TEST_ASSERT_EQUAL(46, almanach->minimumSeed);
+    unsigned long result = minimum_range_start(almanach);
+    TEST_ASSERT_EQUAL(46, result);
 }
 TEST(seed_fertilizer, solve_puzzle_part_two) {
-    TEST_IGNORE();
     read_almanach(almanach, "../data/puzzle.txt");
-    map_convert_ranges_all_map_level(almanach->seedRanges, 0, almanach);
-    TEST_ASSERT_EQUAL(46, almanach->minimumSeed);
-}
-TEST(seed_fertilizer, all_maps_all_ranges) {
-    TEST_IGNORE();
-    unsigned long result;
-    read_almanach(almanach, "../data/sample.txt");
-    result = minimum_all_maps_ranges(almanach);
-    TEST_ASSERT_EQUAL(46, result);
+    unsigned long result = minimum_range_start(almanach);
+    TEST_ASSERT_EQUAL(0, result);
 }
 
 

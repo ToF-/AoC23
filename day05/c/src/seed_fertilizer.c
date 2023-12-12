@@ -189,7 +189,7 @@ void map_convert_ranges_all_map_level(RangeSet *current, int level, Almanach *al
     print_ranges(current);
 #endif
     if(level >= MAXMAPS) {
-        almanach->minimumSeed = MIN(almanach->minimumSeed, minimum(current));
+        almanach->minimumSeed = MIN(almanach->minimumSeed, minimum_start(current));
         printf("minimumSeed:%lu\n", almanach->minimumSeed);
         return;
     }
@@ -276,6 +276,31 @@ void map_ranges(RangeSet *result, RangeSet *ranges, Map *map) {
     destroy_range_set(ranges_result);
 }
 
+unsigned long minimum_range_start(Almanach *almanach) {
+    RangeSet *result = new_range_set();
+    RangeSet *ranges = new_range_set();
+    Map map;
+    unsigned long min = ULONG_MAX;
+    for(int r = 0 ; r < almanach->seedRanges->count; r++) {
+        empty_ranges(ranges);
+        Range range = almanach->seedRanges->items[r];
+        print_range(range);
+        add_range(ranges, range);
+        for(int m=0; m<MAXMAPS; m++) {
+            map = almanach->maps[m];
+            map_ranges(result, ranges, &map);
+            copy_ranges(ranges, result);
+        }
+        print_ranges(ranges);
+        min = MIN(min, minimum_start(ranges));
+        printf("min:%lu\n", min);
+        getchar();
+    }
+    destroy_range_set(ranges);
+    destroy_range_set(result);
+    return min;
+}
+
 // convert a range through all 7 sets of converters
 void map_convert_range_all_maps(RangeSet *result, Range range, Map *maps) {
     RangeSet *work = new_range_set();
@@ -292,7 +317,6 @@ void map_convert_range_all_maps(RangeSet *result, Range range, Map *maps) {
 #ifdef DEBUG
         printf("------------------ map#%d done with result:\n", m);
         print_ranges(temp);
-        getchar();
 #endif
             copy_ranges(work, temp);
         }
@@ -369,7 +393,7 @@ unsigned long minimum_all_maps_ranges(Almanach *almanach) {
             source->count = 0;
             append_ranges(source, work);
         }
-        min = MIN(minimum(source), min);
+        min = MIN(minimum_start(source), min);
         printf("%lu\n", min);
     }
     free(source);
@@ -377,10 +401,10 @@ unsigned long minimum_all_maps_ranges(Almanach *almanach) {
     return min;
 }
 
-unsigned long minimum(RangeSet *ranges) {
+unsigned long minimum_start(RangeSet *ranges) {
     unsigned long min = ULONG_MAX;
     for(int i=0; i < ranges->count; i++) {
-        min = MIN(ranges->items[i].start, min);
+        min = MIN(min, ranges->items[i].start);
     }
     return min;
 }
