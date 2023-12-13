@@ -40,6 +40,7 @@ void destroy_almanach(Almanach *);
 RangeSet *new_range_set();
 void destroy_range_set(RangeSet *);
 
+Range make_range(unsigned long, unsigned long);
 bool has_range(RangeSet *, Range);
 void add_range(RangeSet *, Range);
 bool pop_range(Range *, RangeSet *);

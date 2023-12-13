@@ -8,6 +8,11 @@
 #define MIN(a,b) (a < b ? a : b)
 #define MAX(a,b) (a > b ? a : b)
 
+
+Range make_range(unsigned long start, unsigned long len) {
+    return (Range) { start, len };
+}
+
 Almanach *new_almanach() {
     Almanach *almanach = (Almanach *)malloc(sizeof(Almanach));
     almanach->values = (unsigned long *)malloc(sizeof(unsigned long)*MAXVALUES);
@@ -147,10 +152,7 @@ void read_almanach(Almanach *almanach, char *filename) {
     almanach->valueCount = scan_values(almanach->values, lines[0]);
     for(int i=0; i<almanach->valueCount; i++) {
         if(i%2) {
-            Range range;
-            range.start = almanach->values[i-1];
-            range.len = almanach->values[i];
-            add_range(almanach->seedRanges, range);
+            add_range(almanach->seedRanges, make_range(almanach->values[i-1], almanach->values[i]));
         }
     }
     int mapCount = 0;
@@ -188,20 +190,11 @@ void convert_range(RangeSet *converted, RangeSet *remaining, Range range, Conver
     }
 
     if(range.start < inter.start) {
-        Range before;
-        before.start = range.start;
-        before.len = inter.start - before.start;
-        add_range(remaining, before);
+        add_range(remaining, make_range( range.start, inter.start - range.start ));
     }
-    Range convert;
-    convert.start = inter.start + converter.dest - converter.range.start;
-    convert.len = inter.len;
-    add_range(converted, convert);
+    add_range(converted, make_range(inter.start + converter.dest - converter.range.start, inter.len ));
     if(range_end(range) > range_end(inter)) {
-        Range after;
-        after.start = inter.start + inter.len;
-        after.len = range.start + range.len - after.start;
-        add_range(remaining, after);
+        add_range(remaining, make_range(inter.start + inter.len, range.start + range.len - (inter.start + inter.len)));
     }
 }
 
