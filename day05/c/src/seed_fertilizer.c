@@ -178,17 +178,16 @@ void read_almanach(Almanach *almanach, char *filename) {
 // converted : the intersection between range and converter, mapped to the converter offset
 // remaining : the ranges that don't intersect with the converter
 void convert_range(RangeSet *converted, RangeSet *remaining, Range range, Converter converter) {
-    Range inter;
 
-    inter.start = MAX(range.start, converter.range.start);
-    unsigned long inter_end = MIN(range_end(range), range_end(converter.range));
-    inter.len = inter_end > inter.start ? inter_end - inter.start + 1 : 0;
+    unsigned long start = MAX(range.start, converter.range.start);
+    unsigned long end   = MIN(range_end(range), range_end(converter.range));
+    unsigned long len   = end > start ? end - start + 1 : 0;
 
+    Range inter = make_range(start, len);
     if(inter.len == 0) {
         add_range(remaining, range);
         return;
     }
-
     if(range.start < inter.start) {
         add_range(remaining, make_range( range.start, inter.start - range.start ));
     }
