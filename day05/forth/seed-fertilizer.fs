@@ -1,22 +1,26 @@
 2500 constant maxrange
 
-: set ( n <name> -- )
-    create 0 , , ;
+: set ( capacity itemsize <name> -- )
+    create 0 , 2dup 32 lshift or , * allot ;
 
-: itemsize ( set -- n )
-    cell+ @ ;
+: set>itemsize ( set -- n )
+    cell+ @ 32 rshift ;
 
-: itemcount ( set - n )
+: set>count ( set - n )
     @ ;
+
+: set>capacity ( set -- n )
+    cell+ @ 32767 and ;
 
 : set>items ( set - adr )
     cell+ cell+ ;
 
 : rangeset ( <name> -- )
-    2 set ;
+    maxrange 2 set ;
 
 : set>end ( set -- adr )
-    dup 2@ * cells
+    dup set>itemsize
+    over set>count * cells 
     swap set>items + ;
 
 : (hasrange?) ( n,m,set -- f )
@@ -32,36 +36,66 @@
     2drop ;
 
 : hasrange? ( n,m,set -- f )
-    dup itemcount if
+    dup set>count if
         (hasrange?)
     else
         drop 2drop false
     then ;
 
 : (addrange) ( n,m,set -- )
-    dup itemcount 1+ over !
-    set>end 2 cells - 2! ;
+    dup >r set>end 2!
+    r> dup set>count 1+ swap ! ;
 
 : addrange ( n,m,set -- )
+    dup set>capacity
+    over set>count <= if
+       s" range out of capacity" exception throw
+    then
     dup 2over rot hasrange? 0= if
         (addrange)
     else
         drop 2drop
     then ;
 
+: emptyranges ( set )
+    0 swap ! ;
+
+: (deletefirstrange) ( set -- )
+    dup set>items over       ( set,dest,set )
+    over cell+ cell+         ( set,dest,set,srce )
+    -rot set>count cells 2*  ( set,srce,dest,size )
+    cmove
+    dup set>count 1- swap ! ;
+
+: firstrange ( set -- n,m )
+    cell+ cell+ 2@ ;
+
 : (nextrange) ( set -- n,m)
-    dup set>items 2@ 2>r
-    dup itemcount 1- over !
-    dup set>items
-    swap set>end
-    swap ?do
-        i dup 2 cells + 2@ rot 2!
-    2 cells +loop
-    2r> ;
+    dup firstrange rot
+    (deletefirstrange) ;
 
 : nextrange ( set -- n,m|f )
-    dup itemcount if
+    dup set>count if
         (nextrange) true
     else
         drop false
     then ;
+
+: (addranges) ( src,dest -- )
+    swap 
+    dup set>end
+    swap set>items do
+        dup i 2@ rot addrange
+        2 cells +loop
+    drop ;
+
+: addranges ( src,dest -- )
+    over set>count if
+       (addranges)
+    else
+        2drop
+    then ;
+
+: copyranges ( src,dest -- )
+    dup emptyranges
+    addranges ;
