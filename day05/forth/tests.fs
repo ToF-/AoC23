@@ -1,7 +1,6 @@
 require ffl/tst.fs
 require seed-fertilizer.fs
 
-t{
     ." max range is 2500" cr
     maxrange 2500 ?s
 
@@ -50,5 +49,29 @@ t{
     foo nextrange ?true 1905 18 ?d
     foo nextrange ?false
 
-}t
+    ." convert range, no intersection" cr
+    rangeset result
+    rangeset remaining
+
+    ." max converter is 100" cr
+    maxconverter 100 ?s
+
+    ." a converter set is initially empty" cr
+    converterset loo
+    loo set>capacity maxconverter ?s
+    loo set>count 0 ?s
+    
+    ." items in a converter set are 3 cells long" cr
+    loo set>itemsize 3 ?s
+
+    ." after adding a converter to a converter set it can be found with nthconverter" cr
+    10 11 12 loo addconverter
+    20 21 22 loo addconverter
+    1 2 3 loo addconverter
+    0 loo nthconverter
+    11 12 ?d 10 ?s
+    1 loo nthconverter
+    21 22 ?d 20 ?s
+    2 loo nthconverter
+    2 3 ?d 1 ?s
 bye
